@@ -3,41 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>Estilo Prisma</title>
-  <link rel="stylesheet" href="style.css"> <!-- Enlace al archivo CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css"> <!-- Archivo de estilos -->
 </head>
 <body>
 
-<h1>Estilo Prisma</h1>
+<header>
+  <h1>Estilo Prisma</h1>
+</header>
 
-<div class="filtro">
+<section class="filtro">
   <select id="filtroCategoria">
     <option value="">Todas las categorías</option>
   </select>
   <button onclick="limpiarFiltro()">Quitar Filtro</button>
-</div>
+</section>
 
-<div id="productos"></div>
+<main id="productos"></main>
 
-<!-- Modal -->
+<!-- Modal para mostrar producto ampliado -->
 <div id="modal" class="modal">
   <div class="modal-content">
     <span class="cerrar" onclick="cerrarModal()">&times;</span>
-    <h2 id="modalTitulo"></h2>
     <img id="modalImagen" src="" alt="">
-    <p id="modalPrecio"></p>
-    <p id="modalTalla"></p>
-    <p id="modalColor"></p>
+    <div class="modal-info">
+      <h2 id="modalTitulo"></h2>
+      <p id="modalPrecio"></p>
+      <p id="modalTalla"></p>
+      <p id="modalColor"></p>
+    </div>
   </div>
 </div>
 
 <script>
-  // Tu código JavaScript permanece igual
   let todosLosProductos = [];
 
   async function cargarProductos() {
     const respuesta = await fetch('chips.csv');
     const texto = await respuesta.text();
-    
     const lineas = texto.trim().split('\n');
     const encabezados = lineas[0].split(',');
 
@@ -64,7 +67,7 @@
       div.onclick = () => abrirModal(producto);
 
       const imagen = document.createElement('img');
-      imagen.src = producto.Enlace;
+      imagen.src = formatearLinkDrive(producto.Enlace);
       imagen.alt = producto.Imagen;
 
       const titulo = document.createElement('h3');
@@ -79,6 +82,15 @@
 
       contenedor.appendChild(div);
     });
+  }
+
+  function formatearLinkDrive(url) {
+    // Corrige el enlace de Google Drive para ser visible directamente
+    if (url.includes('drive.google.com')) {
+      const id = url.match(/[-\w]{25,}/);
+      if (id) return `https://drive.google.com/uc?id=${id[0]}`;
+    }
+    return url;
   }
 
   function crearFiltro() {
@@ -105,9 +117,9 @@
   }
 
   function abrirModal(producto) {
-    document.getElementById('modal').style.display = 'block';
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('modalImagen').src = formatearLinkDrive(producto.Enlace);
     document.getElementById('modalTitulo').textContent = producto.Imagen;
-    document.getElementById('modalImagen').src = producto.Enlace;
     document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
     document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla}`;
     document.getElementById('modalColor').textContent = `Colores: ${producto.Color}`;
