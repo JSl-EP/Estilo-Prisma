@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rock Store – Catálogo</title>
+  
+  <!-- Fuentes -->
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap" 
+    rel="stylesheet"
+  />
+  
+  <style>
+    /* RESET & BASE */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f3e5f5;
+      color: #000;
+      line-height: 1.4;
+    }
+    h1 {
+      font-family: 'Bangers', cursive;
+      font-size: 2.8rem;
+      color: #2b003b;
+      text-align: center;
+      margin: 20px 0;
+    }
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+      gap: 24px;
+      padding: 0 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    /* ITEM CARD */
+    .item {
+      background: #fff;
+      border: 2px solid #2b003b;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .item img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .info {
+      padding: 12px;
+    }
+    .info h3 {
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      color: #2b003b;
+      margin-bottom: 6px;
+    }
+    .info p {
+      font-size: 0.95rem;
+      color: #333;
+      min-height: 40px;
+    }
+    .price {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #39004f;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎸 Catálogo Rock Store 🖤</h1>
+  <div id="catalog" class="grid">
+    Cargando catálogo…
+  </div>
+
+  <script>
+    // Carga chips.csv desde el mismo dominio
+    fetch('chips.csv')
+      .then(res => res.text())
+      .then(text => {
+        const lines   = text.trim().split('\n');
+        const headers = lines.shift().split(',');
+        const items   = lines.map(line => {
+          const cols = line.split(',');
+          return headers.reduce((o,h,i) => {
+            o[h.trim()] = cols[i] ? cols[i].trim() : '';
+            return o;
+          }, {});
+        });
+        // Genera HTML
+        const html = items.map(p => `
+          <div class="item">
+            <img src="${p.URL_CDN || p.Imagen}" alt="${p.Nombre}">
+            <div class="info">
+              <h3>${p.Nombre}</h3>
+              <p>${p.Descripcion}</p>
+              <div class="price">\$${p.Precio}</div>
+            </div>
+          </div>
+        `).join('');
+        document.getElementById('catalog').innerHTML = html;
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('catalog').textContent = 'Error cargando catálogo.';
+      });
+  </script>
+
+</body>
+</html>
