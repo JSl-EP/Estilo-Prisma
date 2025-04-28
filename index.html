@@ -3,89 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Estilo Prisma</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .filtro {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    select {
-      padding: 5px;
-      font-size: 16px;
-    }
-    button {
-      padding: 5px 10px;
-      font-size: 16px;
-      margin-left: 10px;
-    }
-    #productos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .producto {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      width: 200px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .producto:hover {
-      transform: scale(1.05);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      padding-top: 50px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.8);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-      text-align: center;
-    }
-    .modal img {
-      width: 100%;
-      height: auto;
-      border-radius: 10px;
-    }
-    .cerrar {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .cerrar:hover {
-      color: black;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css"> <!-- Enlace al archivo CSS -->
 </head>
 <body>
 
@@ -113,98 +31,93 @@
 </div>
 
 <script>
-let todosLosProductos = [];
+  // Tu código JavaScript permanece igual
+  let todosLosProductos = [];
 
-// Cargar productos desde CSV
-async function cargarProductos() {
-  const respuesta = await fetch('chips.csv');
-  const texto = await respuesta.text();
-  
-  const lineas = texto.trim().split('\n');
-  const encabezados = lineas[0].split(',');
+  async function cargarProductos() {
+    const respuesta = await fetch('chips.csv');
+    const texto = await respuesta.text();
+    
+    const lineas = texto.trim().split('\n');
+    const encabezados = lineas[0].split(',');
 
-  todosLosProductos = lineas.slice(1).map(linea => {
-    const valores = linea.split(',');
-    const producto = {};
-    encabezados.forEach((encabezado, i) => {
-      producto[encabezado.trim()] = valores[i]?.trim();
+    todosLosProductos = lineas.slice(1).map(linea => {
+      const valores = linea.split(',');
+      const producto = {};
+      encabezados.forEach((encabezado, i) => {
+        producto[encabezado.trim()] = valores[i]?.trim();
+      });
+      return producto;
     });
-    return producto;
-  });
 
-  crearFiltro();
-  mostrarProductos(todosLosProductos);
-}
+    crearFiltro();
+    mostrarProductos(todosLosProductos);
+  }
 
-// Mostrar productos en pantalla principal
-function mostrarProductos(productos) {
-  const contenedor = document.getElementById('productos');
-  contenedor.innerHTML = '';
+  function mostrarProductos(productos) {
+    const contenedor = document.getElementById('productos');
+    contenedor.innerHTML = '';
 
-  productos.forEach(producto => {
-    const div = document.createElement('div');
-    div.className = 'producto';
-    div.onclick = () => abrirModal(producto);
+    productos.forEach(producto => {
+      const div = document.createElement('div');
+      div.className = 'producto';
+      div.onclick = () => abrirModal(producto);
 
-    const imagen = document.createElement('img');
-    imagen.src = producto.Enlace;
-    imagen.alt = producto.Imagen;
+      const imagen = document.createElement('img');
+      imagen.src = producto.Enlace;
+      imagen.alt = producto.Imagen;
 
-    const titulo = document.createElement('h3');
-    titulo.textContent = producto.Imagen;
+      const titulo = document.createElement('h3');
+      titulo.textContent = producto.Imagen;
 
-    const precio = document.createElement('p');
-    precio.textContent = `$${parseInt(producto.Precio).toLocaleString()}`;
+      const precio = document.createElement('p');
+      precio.textContent = `$${parseInt(producto.Precio).toLocaleString()}`;
 
-    div.appendChild(imagen);
-    div.appendChild(titulo);
-    div.appendChild(precio);
+      div.appendChild(imagen);
+      div.appendChild(titulo);
+      div.appendChild(precio);
 
-    contenedor.appendChild(div);
-  });
-}
+      contenedor.appendChild(div);
+    });
+  }
 
-// Crear filtro de categorías
-function crearFiltro() {
-  const select = document.getElementById('filtroCategoria');
-  const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))];
+  function crearFiltro() {
+    const select = document.getElementById('filtroCategoria');
+    const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))];
 
-  categorias.forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat;
-    select.appendChild(option);
-  });
+    categorias.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      select.appendChild(option);
+    });
 
-  select.addEventListener('change', () => {
-    const seleccion = select.value;
-    const filtrados = seleccion ? todosLosProductos.filter(p => p.Categoría === seleccion) : todosLosProductos;
-    mostrarProductos(filtrados);
-  });
-}
+    select.addEventListener('change', () => {
+      const seleccion = select.value;
+      const filtrados = seleccion ? todosLosProductos.filter(p => p.Categoría === seleccion) : todosLosProductos;
+      mostrarProductos(filtrados);
+    });
+  }
 
-// Limpiar filtro
-function limpiarFiltro() {
-  document.getElementById('filtroCategoria').value = '';
-  mostrarProductos(todosLosProductos);
-}
+  function limpiarFiltro() {
+    document.getElementById('filtroCategoria').value = '';
+    mostrarProductos(todosLosProductos);
+  }
 
-// Modal
-function abrirModal(producto) {
-  document.getElementById('modal').style.display = 'block';
-  document.getElementById('modalTitulo').textContent = producto.Imagen;
-  document.getElementById('modalImagen').src = producto.Enlace;
-  document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
-  document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla}`;
-  document.getElementById('modalColor').textContent = `Colores: ${producto.Color}`;
-}
+  function abrirModal(producto) {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('modalTitulo').textContent = producto.Imagen;
+    document.getElementById('modalImagen').src = producto.Enlace;
+    document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
+    document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla}`;
+    document.getElementById('modalColor').textContent = `Colores: ${producto.Color}`;
+  }
 
-function cerrarModal() {
-  document.getElementById('modal').style.display = 'none';
-}
+  function cerrarModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
 
-// Cargar al iniciar
-cargarProductos();
+  cargarProductos();
 </script>
 
 </body>
