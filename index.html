@@ -15,18 +15,18 @@
   </header>
 
   <nav id="categorias" class="categorias">
-    <!-- Aquí van los botones de categorías automáticamente -->
+    <!-- Los botones de categorías se insertan aquí automáticamente -->
   </nav>
 
   <main class="catalogo" id="catalogo">
-    <!-- Los productos se insertarán aquí automáticamente -->
+    <!-- Los productos se insertan aquí automáticamente -->
   </main>
 
   <footer>
     <p>© 2025 Estilo Prisma. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Cargar PapaParse -->
+  <!-- Librería PapaParse para leer el CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
   <script>
@@ -36,7 +36,7 @@
       try {
         const respuesta = await fetch('chips.csv');
         const texto = await respuesta.text();
-        
+
         Papa.parse(texto, {
           header: true,
           skipEmptyLines: true,
@@ -62,7 +62,7 @@
       btnTodos.onclick = () => mostrarProductos(todosLosProductos);
       categoriasNav.appendChild(btnTodos);
 
-      // Botones por categoría
+      // Botones de cada categoría
       categoriasUnicas.forEach(cat => {
         const boton = document.createElement('button');
         boton.textContent = cat;
@@ -86,8 +86,11 @@
           div.innerHTML = `
             <img src="${producto.Enlace.trim()}" alt="${producto.Imagen}" loading="lazy">
             <h2>${producto.Imagen}</h2>
-            <p class="precio">$${producto.Precio}</p>
-            <p class="descripcion">Talla: ${producto.Talla || '-'}<br>Colores: ${producto.Color || '-'}</p>
+            <p class="precio">$${Number(producto.Precio).toLocaleString('es-CO')}</p>
+            <p class="descripcion">
+              Talla: ${producto.Talla || '-'}<br>
+              Colores: ${producto.Color || '-'}
+            </p>
           `;
           catalogo.appendChild(div);
         }
