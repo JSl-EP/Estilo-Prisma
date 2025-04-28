@@ -11,8 +11,12 @@
 
   <header>
     <h1>Estilo Prisma</h1>
-    <p>Colores que inspiran, estilo que destaca..</p>
+    <p>Tu estilo, tu esencia. Ropa con alma rockera.</p>
   </header>
+
+  <nav id="categorias" class="categorias">
+    <!-- Aquí van los botones de categorías automáticamente -->
+  </nav>
 
   <main class="catalogo" id="catalogo">
     <!-- Los productos se insertarán aquí automáticamente -->
@@ -26,6 +30,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
   <script>
+    let todosLosProductos = [];
+
     async function cargarProductos() {
       try {
         const respuesta = await fetch('chips.csv');
@@ -35,28 +41,59 @@
           header: true,
           skipEmptyLines: true,
           complete: function(resultados) {
-            const productos = resultados.data;
-            const catalogo = document.getElementById('catalogo');
-
-            productos.forEach(producto => {
-              if (producto.imagen && producto.nombre && producto.precio) {
-                const div = document.createElement('div');
-                div.className = 'producto';
-                div.innerHTML = `
-                  <img src="${producto.imagen.trim()}" alt="${producto.nombre}" loading="lazy">
-                  <h2>${producto.nombre}</h2>
-                  <p class="precio">$${producto.precio}</p>
-                  <p class="descripcion">${producto.descripcion || ''}</p>
-                `;
-                catalogo.appendChild(div);
-              }
-            });
+            todosLosProductos = resultados.data;
+            generarCategorias(todosLosProductos);
+            mostrarProductos(todosLosProductos);
           }
         });
       } catch (error) {
         console.error('Error cargando productos:', error);
       }
     }
+
+    function generarCategorias(productos) {
+      const categoriasNav = document.getElementById('categorias');
+      const categoriasUnicas = [...new Set(productos.map(p => p.Categoría.trim()))];
+
+      // Botón para mostrar todos
+      const btnTodos = document.createElement('button');
+      btnTodos.textContent = 'Todos';
+      btnTodos.className = 'categoria-boton';
+      btnTodos.onclick = () => mostrarProductos(todosLosProductos);
+      categoriasNav.appendChild(btnTodos);
+
+      // Botones por categoría
+      categoriasUnicas.forEach(cat => {
+        const boton = document.createElement('button');
+        boton.textContent = cat;
+        boton.className = 'categoria-boton';
+        boton.onclick = () => {
+          const filtrados = todosLosProductos.filter(p => p.Categoría.trim() === cat);
+          mostrarProductos(filtrados);
+        };
+        categoriasNav.appendChild(boton);
+      });
+    }
+
+    function mostrarProductos(productos) {
+      const catalogo = document.getElementById('catalogo');
+      catalogo.innerHTML = '';
+
+      productos.forEach(producto => {
+        if (producto.Enlace && producto.Categoría && producto.Precio) {
+          const div = document.createElement('div');
+          div.className = 'producto';
+          div.innerHTML = `
+            <img src="${producto.Enlace.trim()}" alt="${producto.Imagen}" loading="lazy">
+            <h2>${producto.Imagen}</h2>
+            <p class="precio">$${producto.Precio}</p>
+            <p class="descripcion">Talla: ${producto.Talla || '-'}<br>Colores: ${producto.Color || '-'}</p>
+          `;
+          catalogo.appendChild(div);
+        }
+      });
+    }
+
     cargarProductos();
   </script>
 
