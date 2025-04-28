@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Estilo Prisma - Tienda de Ropa</title>
+  <title>Estilo Prisma - Catálogo</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,23 +13,32 @@
     <p>Tu estilo, tu esencia. Ropa con alma rockera.</p>
   </header>
 
-  <section class="catalogo">
-    <!-- Aquí van los productos dinámicamente si quieres -->
-    <div class="producto">
-      <img src="carpeta_imagenes/ejemplo1.jpg" alt="Producto 1">
-      <h2>Camisa Rock</h2>
-      <p>$120.000</p>
-    </div>
-    <div class="producto">
-      <img src="carpeta_imagenes/ejemplo2.jpg" alt="Producto 2">
-      <h2>Chaqueta Estilo Prisma</h2>
-      <p>$250.000</p>
-    </div>
-    <!-- Agrega más productos aquí -->
+  <section class="catalogo" id="catalogo">
+    <!-- Productos se cargarán automáticamente -->
   </section>
 
   <footer>
     <p>© 2025 Estilo Prisma. Todos los derechos reservados.</p>
   </footer>
+
+  <script>
+    async function cargarProductos() {
+      const respuesta = await fetch('productos.json');
+      const productos = await respuesta.json();
+      const catalogo = document.getElementById('catalogo');
+
+      productos.forEach(producto => {
+        const div = document.createElement('div');
+        div.className = 'producto';
+        div.innerHTML = `
+          <img src="${producto.imagen}" alt="${producto.nombre}">
+          <h2>${producto.nombre}</h2>
+          <p>$${producto.precio}</p>
+        `;
+        catalogo.appendChild(div);
+      });
+    }
+    cargarProductos();
+  </script>
 </body>
 </html>
