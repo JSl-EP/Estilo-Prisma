@@ -2,103 +2,210 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Estilo Prisma - Catálogo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Estilo Prisma</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .filtro {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    select {
+      padding: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 5px 10px;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    #productos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .producto {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      width: 200px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .producto:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      padding-top: 50px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .modal img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    .cerrar {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cerrar:hover {
+      color: black;
+    }
+  </style>
 </head>
 <body>
 
-  <header>
-    <h1>Estilo Prisma</h1>
-    <p>Tu estilo, tu esencia. Ropa con alma rockera.</p>
-  </header>
+<h1>Estilo Prisma</h1>
 
-  <nav id="categorias" class="categorias">
-    <!-- Los botones de categorías se insertan aquí automáticamente -->
-  </nav>
+<div class="filtro">
+  <select id="filtroCategoria">
+    <option value="">Todas las categorías</option>
+  </select>
+  <button onclick="limpiarFiltro()">Quitar Filtro</button>
+</div>
 
-  <main class="catalogo" id="catalogo">
-    <!-- Los productos se insertan aquí automáticamente -->
-  </main>
+<div id="productos"></div>
 
-  <footer>
-    <p>© 2025 Estilo Prisma. Todos los derechos reservados.</p>
-  </footer>
+<!-- Modal -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="cerrar" onclick="cerrarModal()">&times;</span>
+    <h2 id="modalTitulo"></h2>
+    <img id="modalImagen" src="" alt="">
+    <p id="modalPrecio"></p>
+    <p id="modalTalla"></p>
+    <p id="modalColor"></p>
+  </div>
+</div>
 
-  <!-- Librería PapaParse para leer el CSV -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script>
+let todosLosProductos = [];
 
-  <script>
-    let todosLosProductos = [];
+// Cargar productos desde CSV
+async function cargarProductos() {
+  const respuesta = await fetch('chips.csv');
+  const texto = await respuesta.text();
+  
+  const lineas = texto.trim().split('\n');
+  const encabezados = lineas[0].split(',');
 
-    async function cargarProductos() {
-      try {
-        const respuesta = await fetch('chips.csv');
-        const texto = await respuesta.text();
+  todosLosProductos = lineas.slice(1).map(linea => {
+    const valores = linea.split(',');
+    const producto = {};
+    encabezados.forEach((encabezado, i) => {
+      producto[encabezado.trim()] = valores[i]?.trim();
+    });
+    return producto;
+  });
 
-        Papa.parse(texto, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(resultados) {
-            todosLosProductos = resultados.data;
-            generarCategorias(todosLosProductos);
-            mostrarProductos(todosLosProductos);
-          }
-        });
-      } catch (error) {
-        console.error('Error cargando productos:', error);
-      }
-    }
+  crearFiltro();
+  mostrarProductos(todosLosProductos);
+}
 
-    function generarCategorias(productos) {
-      const categoriasNav = document.getElementById('categorias');
-      const categoriasUnicas = [...new Set(productos.map(p => p.Categoría.trim()))];
+// Mostrar productos en pantalla principal
+function mostrarProductos(productos) {
+  const contenedor = document.getElementById('productos');
+  contenedor.innerHTML = '';
 
-      // Botón para mostrar todos
-      const btnTodos = document.createElement('button');
-      btnTodos.textContent = 'Todos';
-      btnTodos.className = 'categoria-boton';
-      btnTodos.onclick = () => mostrarProductos(todosLosProductos);
-      categoriasNav.appendChild(btnTodos);
+  productos.forEach(producto => {
+    const div = document.createElement('div');
+    div.className = 'producto';
+    div.onclick = () => abrirModal(producto);
 
-      // Botones de cada categoría
-      categoriasUnicas.forEach(cat => {
-        const boton = document.createElement('button');
-        boton.textContent = cat;
-        boton.className = 'categoria-boton';
-        boton.onclick = () => {
-          const filtrados = todosLosProductos.filter(p => p.Categoría.trim() === cat);
-          mostrarProductos(filtrados);
-        };
-        categoriasNav.appendChild(boton);
-      });
-    }
+    const imagen = document.createElement('img');
+    imagen.src = producto.Enlace;
+    imagen.alt = producto.Imagen;
 
-    function mostrarProductos(productos) {
-      const catalogo = document.getElementById('catalogo');
-      catalogo.innerHTML = '';
+    const titulo = document.createElement('h3');
+    titulo.textContent = producto.Imagen;
 
-      productos.forEach(producto => {
-        if (producto.Enlace && producto.Categoría && producto.Precio) {
-          const div = document.createElement('div');
-          div.className = 'producto';
-          div.innerHTML = `
-            <img src="${producto.Enlace.trim()}" alt="${producto.Imagen}" loading="lazy">
-            <h2>${producto.Imagen}</h2>
-            <p class="precio">$${Number(producto.Precio).toLocaleString('es-CO')}</p>
-            <p class="descripcion">
-              Talla: ${producto.Talla || '-'}<br>
-              Colores: ${producto.Color || '-'}
-            </p>
-          `;
-          catalogo.appendChild(div);
-        }
-      });
-    }
+    const precio = document.createElement('p');
+    precio.textContent = `$${parseInt(producto.Precio).toLocaleString()}`;
 
-    cargarProductos();
-  </script>
+    div.appendChild(imagen);
+    div.appendChild(titulo);
+    div.appendChild(precio);
+
+    contenedor.appendChild(div);
+  });
+}
+
+// Crear filtro de categorías
+function crearFiltro() {
+  const select = document.getElementById('filtroCategoria');
+  const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))];
+
+  categorias.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
+  });
+
+  select.addEventListener('change', () => {
+    const seleccion = select.value;
+    const filtrados = seleccion ? todosLosProductos.filter(p => p.Categoría === seleccion) : todosLosProductos;
+    mostrarProductos(filtrados);
+  });
+}
+
+// Limpiar filtro
+function limpiarFiltro() {
+  document.getElementById('filtroCategoria').value = '';
+  mostrarProductos(todosLosProductos);
+}
+
+// Modal
+function abrirModal(producto) {
+  document.getElementById('modal').style.display = 'block';
+  document.getElementById('modalTitulo').textContent = producto.Imagen;
+  document.getElementById('modalImagen').src = producto.Enlace;
+  document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
+  document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla}`;
+  document.getElementById('modalColor').textContent = `Colores: ${producto.Color}`;
+}
+
+function cerrarModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+// Cargar al iniciar
+cargarProductos();
+</script>
 
 </body>
 </html>
