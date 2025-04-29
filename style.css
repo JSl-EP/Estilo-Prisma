@@ -1,4 +1,3 @@
-/* === VARIABLES DE COLOR Y FUENTES === */
 :root {
   --morado: #6a0dad;
   --lila: #d9b3ff;
@@ -9,7 +8,6 @@
   --fuente-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* === RESETEO Y BASE === */
 * {
   margin: 0;
   padding: 0;
@@ -23,7 +21,6 @@ body {
   padding: 20px;
 }
 
-/* === TÍTULO PRINCIPAL === */
 h1 {
   text-align: center;
   color: var(--morado);
@@ -31,7 +28,6 @@ h1 {
   font-size: 2.5rem;
 }
 
-/* === SELECT Y BOTÓN FILTRO === */
 select, button {
   font-size: 1rem;
   padding: 10px 15px;
@@ -49,7 +45,6 @@ button:hover, select:hover {
   color: var(--blanco);
 }
 
-/* === CONTENEDOR PRODUCTOS === */
 #productosContainer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -57,9 +52,8 @@ button:hover, select:hover {
   margin-top: 20px;
 }
 
-/* === TARJETAS DE PRODUCTO === */
 .producto {
-  background-color: var(--blanco);
+  background-color: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
   border: 1px solid var(--lila);
   border-radius: 10px;
   box-shadow: 0 4px 8px var(--sombra);
@@ -73,7 +67,6 @@ button:hover, select:hover {
   box-shadow: 0 6px 12px var(--sombra);
 }
 
-/* === IMAGEN DEL PRODUCTO === */
 .producto img {
   width: 100%;
   height: auto;
@@ -81,7 +74,6 @@ button:hover, select:hover {
   object-fit: cover;
 }
 
-/* === NOMBRE, PRECIO Y CATEGORÍA === */
 .producto h3 {
   margin: 10px 0 5px;
   font-size: 1.2rem;
@@ -99,7 +91,6 @@ button:hover, select:hover {
   color: var(--morado);
 }
 
-/* === RESPONSIVO (MÓVIL) === */
 @media (max-width: 600px) {
   h1 {
     font-size: 2rem;
@@ -128,38 +119,41 @@ button:hover, select:hover {
 
 .icono {
   position: absolute;
-  opacity: 0.07;
+  opacity: 0.05;
   width: 80px;
-  animation: flotar 20s infinite linear;
+  animation: moverAleatorio 20s infinite linear;
   filter: grayscale(100%) contrast(120%) brightness(150%);
 }
 
 .flotante1 {
-  top: 15%;
-  left: 25%;
-  animation-duration: 28s;
+  animation-duration: 30s;
+  animation-delay: 0s;
 }
 
 .flotante2 {
-  top: 45%;
-  left: 65%;
-  animation-duration: 32s;
+  animation-duration: 35s;
+  animation-delay: 5s;
 }
 
 .flotante3 {
-  top: 75%;
-  left: 10%;
-  animation-duration: 36s;
-}
-
-.flotante4 {
-  top: 20%;
-  left: 80%;
   animation-duration: 40s;
+  animation-delay: 10s;
 }
 
-@keyframes flotar {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(8deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+@keyframes moverAleatorio {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  25% {
+    transform: translate(30vw, -10vh) rotate(20deg);
+  }
+  50% {
+    transform: translate(-20vw, 15vh) rotate(-15deg);
+  }
+  75% {
+    transform: translate(25vw, 25vh) rotate(10deg);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
 }
