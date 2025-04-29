@@ -3,125 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <title>Estilo Prisma</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
   <h1>Estilo Prisma</h1>
-</header>
 
-<section class="filtro">
   <select id="filtroCategoria">
-    <option value="">Todas las categorías</option>
+    <option value="Todas">Todas las categorías</option>
   </select>
-  <button onclick="limpiarFiltro()">Quitar Filtro</button>
-</section>
+  <button id="quitarFiltro">Quitar Filtro</button>
 
-<main id="productos"></main>
+  <input type="file" id="archivoCSV" accept=".csv">
 
-<!-- Modal para mostrar producto ampliado -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <span class="cerrar" onclick="cerrarModal()">&times;</span>
-    <img id="modalImagen" src="" alt="">
-    <div class="modal-info">
-      <h2 id="modalTitulo"></h2>
-      <p id="modalPrecio"></p>
-      <p id="modalTalla"></p>
-      <p id="modalColor"></p>
-    </div>
-  </div>
-</div>
+  <div id="productosContainer"></div>
 
-<script>
-  let todosLosProductos = [];
+  <script>
+    let todosLosProductos = [];
 
-  async function cargarProductos() {
-    const respuesta = await fetch('chips.csv');
-    const texto = await respuesta.text();
-    const lineas = texto.trim().split('\n');
-    const encabezados = lineas[0].split('\t');
+    document.getElementById('archivoCSV').addEventListener('change', function (e) {
+      const archivo = e.target.files[0];
+      const lector = new FileReader();
 
-    todosLosProductos = lineas.slice(1).map(linea => {
-      const valores = linea.split('\t');
-      const producto = {};
-      encabezados.forEach((encabezado, i) => {
-        producto[encabezado.trim()] = valores[i]?.trim();
+      lector.onload = function (event) {
+        const texto = event.target.result;
+        const lineas = texto.trim().split('\n');
+        const encabezados = lineas[0].split(',');
+
+        const productos = lineas.slice(1).map(linea => {
+          const datos = linea.split(',');
+          const producto = {};
+          encabezados.forEach((campo, i) => {
+            producto[campo.trim()] = datos[i] ? datos[i].trim() : '';
+          });
+          return producto;
+        });
+
+        todosLosProductos = productos;
+        cargarCategorias(productos);
+        mostrarProductos(productos);
+      };
+
+      lector.readAsText(archivo);
+    });
+
+    function cargarCategorias(productos) {
+      const filtro = document.getElementById('filtroCategoria');
+      const categorias = [...new Set(productos.map(p => p['Categoría']).filter(Boolean))];
+
+      filtro.innerHTML = `<option value="Todas">Todas las categorías</option>`;
+      categorias.forEach(cat => {
+        const opcion = document.createElement('option');
+        opcion.value = cat;
+        opcion.textContent = cat;
+        filtro.appendChild(opcion);
       });
-      return producto;
-    });
+    }
 
-    crearFiltro();
-    mostrarProductos(todosLosProductos);
-  }
+    function mostrarProductos(productos) {
+      const contenedor = document.getElementById('productosContainer');
+      contenedor.innerHTML = '';
 
-  function mostrarProductos(productos) {
-    const contenedor = document.getElementById('productos');
-    contenedor.innerHTML = '';
+      productos.forEach(producto => {
+        if (!producto.Enlace || !producto.Name || !producto.Precio) return;
 
-    productos.forEach(producto => {
-      const div = document.createElement('div');
-      div.className = 'producto';
-      div.onclick = () => abrirModal(producto);
+        const div = document.createElement('div');
+        div.className = 'producto';
 
-      const imagen = document.createElement('img');
-      imagen.src = 'imagenes/' + producto.Name?.trim();
-      imagen.alt = producto.Imagen || 'Producto';
+        div.innerHTML = `
+          <img src="${producto.Enlace}" alt="Producto">
+          <h3>${producto.Name}</h3>
+          <p class="precio">$${parseInt(producto.Precio).toLocaleString()}</p>
+          <p class="categoria">${producto['Categoría']}</p>
+        `;
 
-      const titulo = document.createElement('h3');
-      titulo.textContent = producto.Imagen || 'Sin título';
+        contenedor.appendChild(div);
+      });
+    }
 
-      const precio = document.createElement('p');
-      precio.textContent = `$${parseInt(producto.Precio).toLocaleString()}`;
+    document.getElementById('filtroCategoria').addEventListener('change', function () {
+      const categoriaSeleccionada = this.value;
+      const filtrados = categoriaSeleccionada === 'Todas'
+        ? todosLosProductos
+        : todosLosProductos.filter(p => p['Categoría'] === categoriaSeleccionada);
 
-      div.appendChild(imagen);
-      div.appendChild(titulo);
-      div.appendChild(precio);
-
-      contenedor.appendChild(div);
-    });
-  }
-
-  function crearFiltro() {
-    const select = document.getElementById('filtroCategoria');
-    const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))].filter(Boolean);
-
-    categorias.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat;
-      option.textContent = cat;
-      select.appendChild(option);
-    });
-
-    select.addEventListener('change', () => {
-      const seleccion = select.value;
-      const filtrados = seleccion ? todosLosProductos.filter(p => p.Categoría === seleccion) : todosLosProductos;
       mostrarProductos(filtrados);
     });
-  }
 
-  function limpiarFiltro() {
-    document.getElementById('filtroCategoria').value = '';
-    mostrarProductos(todosLosProductos);
-  }
-
-  function abrirModal(producto) {
-    document.getElementById('modal').style.display = 'flex';
-    document.getElementById('modalImagen').src = 'imagenes/' + producto.Name?.trim();
-    document.getElementById('modalTitulo').textContent = producto.Imagen || '';
-    document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
-    document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla || '-'}`;
-    document.getElementById('modalColor').textContent = `Colores: ${producto.Color || '-'}`;
-  }
-
-  function cerrarModal() {
-    document.getElementById('modal').style.display = 'none';
-  }
-
-  cargarProductos();
-</script>
+    document.getElementById('quitarFiltro').addEventListener('click', function () {
+      document.getElementById('filtroCategoria').value = 'Todas';
+      mostrarProductos(todosLosProductos);
+    });
+  </script>
 
 </body>
 </html>
