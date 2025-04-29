@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Estilo Prisma</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css"> <!-- Archivo de estilos -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -42,10 +42,10 @@
     const respuesta = await fetch('chips.csv');
     const texto = await respuesta.text();
     const lineas = texto.trim().split('\n');
-    const encabezados = lineas[0].split(',');
+    const encabezados = lineas[0].split('\t');
 
     todosLosProductos = lineas.slice(1).map(linea => {
-      const valores = linea.split(',');
+      const valores = linea.split('\t');
       const producto = {};
       encabezados.forEach((encabezado, i) => {
         producto[encabezado.trim()] = valores[i]?.trim();
@@ -67,7 +67,7 @@
       div.onclick = () => abrirModal(producto);
 
       const imagen = document.createElement('img');
-      imagen.src = formatearLinkDrive(producto.Enlace);
+      imagen.src = 'imagenes/' + producto.Name?.trim();
       imagen.alt = producto.Imagen || 'Producto';
 
       const titulo = document.createElement('h3');
@@ -82,19 +82,6 @@
 
       contenedor.appendChild(div);
     });
-  }
-
-  function formatearLinkDrive(url) {
-    if (!url) return '';
-
-    const regex = /(?:\/d\/|id=|\/file\/d\/|^)([-\w]{25,})/;
-    const match = url.match(regex);
-
-    if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-
-    return url;
   }
 
   function crearFiltro() {
@@ -122,7 +109,7 @@
 
   function abrirModal(producto) {
     document.getElementById('modal').style.display = 'flex';
-    document.getElementById('modalImagen').src = formatearLinkDrive(producto.Enlace);
+    document.getElementById('modalImagen').src = 'imagenes/' + producto.Name?.trim();
     document.getElementById('modalTitulo').textContent = producto.Imagen || '';
     document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
     document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla || '-'}`;
