@@ -68,10 +68,10 @@
 
       const imagen = document.createElement('img');
       imagen.src = formatearLinkDrive(producto.Enlace);
-      imagen.alt = producto.Imagen;
+      imagen.alt = producto.Imagen || 'Producto';
 
       const titulo = document.createElement('h3');
-      titulo.textContent = producto.Imagen;
+      titulo.textContent = producto.Imagen || 'Sin título';
 
       const precio = document.createElement('p');
       precio.textContent = `$${parseInt(producto.Precio).toLocaleString()}`;
@@ -85,17 +85,21 @@
   }
 
   function formatearLinkDrive(url) {
-    // Corrige el enlace de Google Drive para ser visible directamente
-    if (url.includes('drive.google.com')) {
-      const id = url.match(/[-\w]{25,}/);
-      if (id) return `https://drive.google.com/uc?id=${id[0]}`;
+    if (!url) return '';
+
+    const regex = /(?:\/d\/|id=|\/file\/d\/|^)([-\w]{25,})/;
+    const match = url.match(regex);
+
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
     }
+
     return url;
   }
 
   function crearFiltro() {
     const select = document.getElementById('filtroCategoria');
-    const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))];
+    const categorias = [...new Set(todosLosProductos.map(p => p.Categoría))].filter(Boolean);
 
     categorias.forEach(cat => {
       const option = document.createElement('option');
@@ -119,10 +123,10 @@
   function abrirModal(producto) {
     document.getElementById('modal').style.display = 'flex';
     document.getElementById('modalImagen').src = formatearLinkDrive(producto.Enlace);
-    document.getElementById('modalTitulo').textContent = producto.Imagen;
+    document.getElementById('modalTitulo').textContent = producto.Imagen || '';
     document.getElementById('modalPrecio').textContent = `Precio: $${parseInt(producto.Precio).toLocaleString()}`;
-    document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla}`;
-    document.getElementById('modalColor').textContent = `Colores: ${producto.Color}`;
+    document.getElementById('modalTalla').textContent = `Talla: ${producto.Talla || '-'}`;
+    document.getElementById('modalColor').textContent = `Colores: ${producto.Color || '-'}`;
   }
 
   function cerrarModal() {
