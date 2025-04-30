@@ -2,11 +2,73 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Estilo Prisma | Catálogo</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Estilo del modal de imagen */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .titulo {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .filtros {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .contenedor {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      padding: 10px;
+    }
+
+    .producto {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 220px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .producto img {
+      max-width: 100%;
+      height: 180px;
+      object-fit: contain;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .producto h3 {
+      margin: 10px 0 5px;
+      font-size: 16px;
+    }
+
+    .precio {
+      color: green;
+      font-weight: bold;
+    }
+
+    .btn-wsp {
+      display: inline-block;
+      background-color: #25d366;
+      color: white;
+      padding: 8px 16px;
+      margin-top: 10px;
+      text-decoration: none;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    /* Modal imagen ampliada */
     #modalImagen {
       display: none;
       position: fixed;
@@ -57,19 +119,34 @@
     .btn-whatsapp:hover {
       background-color: #1ebe5c;
     }
+
+    /* Íconos flotantes */
+    .icono-fondo {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      opacity: 0.1;
+      animation: flotar linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-100vh); }
+    }
   </style>
 </head>
 <body>
 
   <!-- Íconos flotantes -->
   <script>
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 20; i++) {
       const icon = document.createElement("img");
-      icon.src = "imagenes/icono.png"; // Asegúrate de tener esta imagen
+      icon.src = "imagenes/icono.png";
       icon.className = "icono-fondo";
       icon.style.top = `${Math.random() * 100}vh`;
       icon.style.left = `${Math.random() * 100}vw`;
-      icon.style.animationDuration = `${10 + Math.random() * 30}s`;
+      icon.style.animationDuration = `${10 + Math.random() * 20}s`;
       icon.style.transform = `rotate(${Math.random() * 360}deg)`;
       document.body.appendChild(icon);
     }
@@ -132,7 +209,7 @@
 
         tarjeta.innerHTML = `
           <img src="imagenes/${p.Name}" alt="${p.Categoría}" onclick="ampliarImagen('imagenes/${p.Name}')" />
-          <h3>${p.Imagen}</h3>
+          <h3>${p.Nombre || p.Categoría}</h3>
           <p>${p.Color}</p>
           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
           <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
