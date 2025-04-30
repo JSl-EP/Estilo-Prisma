@@ -45,7 +45,7 @@ button:hover, select:hover {
   color: var(--blanco);
 }
 
-#productosContainer {
+#catalogo {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
@@ -53,7 +53,7 @@ button:hover, select:hover {
 }
 
 .producto {
-  background-color: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
+  background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid var(--lila);
   border-radius: 10px;
   box-shadow: 0 4px 8px var(--sombra);
@@ -91,19 +91,24 @@ button:hover, select:hover {
   color: var(--morado);
 }
 
-@media (max-width: 600px) {
-  h1 {
-    font-size: 2rem;
-  }
+.btn-wsp {
+  display: inline-block;
+  background-color: #25d366;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
 
-  select, button {
-    width: 100%;
-    margin-bottom: 10px;
-  }
+.btn-wsp:hover {
+  background-color: #1ebe5c;
+}
 
-  #productosContainer {
-    grid-template-columns: 1fr;
-  }
+.filtros {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .fondo-animado {
@@ -117,27 +122,12 @@ button:hover, select:hover {
   overflow: hidden;
 }
 
-.icono {
+.icono-fondo {
   position: absolute;
   opacity: 0.05;
   width: 80px;
   animation: moverAleatorio 20s infinite linear;
   filter: grayscale(100%) contrast(120%) brightness(150%);
-}
-
-.flotante1 {
-  animation-duration: 30s;
-  animation-delay: 0s;
-}
-
-.flotante2 {
-  animation-duration: 35s;
-  animation-delay: 5s;
-}
-
-.flotante3 {
-  animation-duration: 40s;
-  animation-delay: 10s;
 }
 
 @keyframes moverAleatorio {
@@ -155,5 +145,20 @@ button:hover, select:hover {
   }
   100% {
     transform: translate(0px, 0px) rotate(0deg);
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  select, button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  #catalogo {
+    grid-template-columns: 1fr;
   }
 }
