@@ -94,7 +94,6 @@ h1 {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  position: relative;
 }
 
 .menu-item i {
@@ -107,15 +106,6 @@ h1 {
   font-size: 1rem;
   font-weight: 500;
   color: var(--negro);
-  flex-grow: 1;
-}
-
-.menu-item .badge {
-  background-color: var(--gris-oscuro);
-  color: var(--gris-texto);
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-size: 0.8rem;
 }
 
 .menu-item:hover {
@@ -130,11 +120,6 @@ h1 {
 .menu-item.active i,
 .menu-item.active span {
   color: var(--morado);
-}
-
-.menu-item.active .badge {
-  background-color: var(--morado);
-  color: white;
 }
 
 .menu-search {
