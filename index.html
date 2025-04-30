@@ -2,208 +2,162 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catálogo Virtual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estilo Prisma | Catálogo</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f6f6f6;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    .icono-fondo {
+    /* Estilo del modal de imagen */
+    #modalImagen {
+      display: none;
       position: fixed;
-      z-index: -1;
-      width: 40px;
-      height: 40px;
-      opacity: 0.08;
-      animation: flotar 20s linear infinite;
-    }
-
-    @keyframes flotar {
-      0% { transform: translateY(100vh) rotate(0deg); }
-      100% { transform: translateY(-100vh) rotate(360deg); }
-    }
-
-    .titulo {
+      z-index: 1000;
+      padding-top: 60px;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
       text-align: center;
-      margin-top: 20px;
-      font-size: 2em;
     }
 
-    .filtros {
-      text-align: center;
-      margin: 20px;
-    }
-
-    select, button {
-      padding: 10px;
-      margin: 0 5px;
-    }
-
-    .contenedor {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .producto {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.3s;
-    }
-
-    .producto:hover {
-      transform: scale(1.03);
-    }
-
-    .producto img {
-      max-width: 100%;
-      height: auto;
+    #modalImagen img {
+      max-width: 90%;
+      max-height: 80vh;
       border-radius: 10px;
     }
 
-    .precio {
-      color: #e91e63;
-      font-weight: bold;
-      margin: 10px 0;
+    #modalImagen span {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: #fff;
+      font-size: 40px;
+      cursor: pointer;
     }
 
-    .btn-wsp {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 15px;
+    /* Botón flotante de WhatsApp */
+    .btn-whatsapp {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
       background-color: #25d366;
       color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      font-size: 30px;
+      line-height: 60px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      z-index: 999;
       text-decoration: none;
-      border-radius: 5px;
     }
 
-    .btn-wsp:hover {
+    .btn-whatsapp:hover {
       background-color: #1ebe5c;
     }
   </style>
 </head>
 <body>
 
-  <h1 class="titulo">Catálogo Virtual</h1>
-
-  <div class="filtros">
-    <select id="filtroCategoria">
-      <option value="Todas">Todas las categorías</option>
-    </select>
-    <button id="quitarFiltro">Quitar filtro</button>
-  </div>
-
-  <div class="contenedor" id="productosContainer"></div>
-
-  <!-- Íconos flotantes como fondo -->
+  <!-- Íconos flotantes -->
   <script>
-    const iconos = ['icons/icon1.png', 'icons/icon2.png', 'icons/icon3.png']; // Agrega aquí los iconos que quieras
-
-    for (let i = 0; i < 30; i++) {
-      const icono = document.createElement('img');
-      icono.src = iconos[Math.floor(Math.random() * iconos.length)];
-      icono.classList.add('icono-fondo');
-      icono.style.top = `${Math.random() * 100}vh`;
-      icono.style.left = `${Math.random() * 100}vw`;
-      icono.style.animationDuration = `${10 + Math.random() * 20}s`;
-      document.body.appendChild(icono);
+    for (let i = 0; i < 50; i++) {
+      const icon = document.createElement("img");
+      icon.src = "imagenes/icono.png"; // Asegúrate de tener esta imagen
+      icon.className = "icono-fondo";
+      icon.style.top = `${Math.random() * 100}vh`;
+      icon.style.left = `${Math.random() * 100}vw`;
+      icon.style.animationDuration = `${10 + Math.random() * 30}s`;
+      icon.style.transform = `rotate(${Math.random() * 360}deg)`;
+      document.body.appendChild(icon);
     }
   </script>
 
+  <h1 class="titulo">Catálogo Estilo Prisma</h1>
+
+  <div class="filtros">
+    <select id="categoriaFiltro">
+      <option value="">Todas las categorías</option>
+    </select>
+    <button onclick="filtrarProductos()">Filtrar</button>
+  </div>
+
+  <div class="contenedor" id="catalogo"></div>
+
+  <!-- Modal para ampliar imagen -->
+  <div id="modalImagen">
+    <span onclick="cerrarModal()">&times;</span>
+    <img id="imgAmpliada" src="" alt="Producto ampliado" />
+  </div>
+
+  <!-- Botón flotante de WhatsApp -->
+  <a href="https://wa.me/573227490934" class="btn-whatsapp" target="_blank" title="¡Escríbenos por WhatsApp!">📱</a>
+
   <script>
-    let todosLosProductos = [];
+    let productos = [];
 
-    async function cargarCSV() {
-      try {
-        const respuesta = await fetch('chips.csv');
-        const texto = await respuesta.text();
-        procesarCSV(texto);
-      } catch (error) {
-        console.error('Error al cargar el CSV:', error);
-      }
-    }
+    function cargarDatos() {
+      fetch('chips.csv')
+        .then(res => res.text())
+        .then(data => {
+          const lineas = data.trim().split('\n');
+          const headers = lineas[0].split(',');
+          productos = lineas.slice(1).map(linea => {
+            const valores = linea.split(',');
+            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
+          });
 
-    function procesarCSV(texto) {
-      const lineas = texto.trim().split('\n');
-      const encabezados = lineas[0].split(',');
+          const categorias = [...new Set(productos.map(p => p.Categoría))];
+          const select = document.getElementById('categoriaFiltro');
+          categorias.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
+          });
 
-      const productos = lineas.slice(1).map(linea => {
-        const datos = linea.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Manejo de comas entre comillas
-        const producto = {};
-        encabezados.forEach((campo, i) => {
-          producto[campo.trim().toLowerCase()] = datos[i] ? datos[i].trim().replace(/^"|"$/g, '') : '';
+          mostrarProductos(productos);
         });
-        return producto;
-      });
-
-      todosLosProductos = productos;
-      cargarCategorias(productos);
-      mostrarProductos(productos);
     }
 
-    function cargarCategorias(productos) {
-      const filtro = document.getElementById('filtroCategoria');
-      const categorias = [...new Set(productos.map(p => p['categoría']).filter(Boolean))];
-      filtro.innerHTML = `<option value="Todas">Todas las categorías</option>`;
-      categorias.forEach(cat => {
-        const opcion = document.createElement('option');
-        opcion.value = cat;
-        opcion.textContent = cat;
-        filtro.appendChild(opcion);
-      });
-    }
-
-    function mostrarProductos(productos) {
-      const contenedor = document.getElementById('productosContainer');
+    function mostrarProductos(lista) {
+      const contenedor = document.getElementById('catalogo');
       contenedor.innerHTML = '';
 
-      productos.forEach(producto => {
-        if (!producto.name || !producto.precio) return;
+      lista.forEach(p => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'producto';
 
-        const nombreImagen = producto.name;
-        const rutaImagen = `imagenes/${nombreImagen}`;
-
-        const div = document.createElement('div');
-        div.className = 'producto';
-
-        div.innerHTML = `
-          <img src="${rutaImagen}" alt="${producto.name}" onerror="this.src='imagenes/placeholder.png'">
-          <h3>${producto.name}</h3>
-          <p class="precio">$${parseInt(producto.precio).toLocaleString()}</p>
-          <p><strong>Talla:</strong> ${producto.talla}</p>
-          <p><strong>Color:</strong> ${producto.color}</p>
-          <p><strong>Categoría:</strong> ${producto['categoría']}</p>
-          <a class="btn-wsp" target="_blank"
-             href="https://wa.me/573227490934?text=Hola,%20quiero%20el%20producto%20${encodeURIComponent(producto.name)}%20en%20color%20${encodeURIComponent(producto.color)}%20y%20talla%20${encodeURIComponent(producto.talla)}.">Comprar por WhatsApp</a>
+        tarjeta.innerHTML = `
+          <img src="imagenes/${p.Name}" alt="${p.Categoría}" onclick="ampliarImagen('imagenes/${p.Name}')" />
+          <h3>${p.Imagen}</h3>
+          <p>${p.Color}</p>
+          <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
+          <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
         `;
 
-        contenedor.appendChild(div);
+        contenedor.appendChild(tarjeta);
       });
     }
 
-    document.getElementById('filtroCategoria').addEventListener('change', function () {
-      const categoriaSeleccionada = this.value;
-      const filtrados = categoriaSeleccionada === 'Todas'
-        ? todosLosProductos
-        : todosLosProductos.filter(p => p['categoría'] === categoriaSeleccionada);
+    function filtrarProductos() {
+      const cat = document.getElementById('categoriaFiltro').value;
+      const filtrados = cat ? productos.filter(p => p.Categoría === cat) : productos;
       mostrarProductos(filtrados);
-    });
+    }
 
-    document.getElementById('quitarFiltro').addEventListener('click', function () {
-      document.getElementById('filtroCategoria').value = 'Todas';
-      mostrarProductos(todosLosProductos);
-    });
+    function ampliarImagen(src) {
+      document.getElementById("modalImagen").style.display = "block";
+      document.getElementById("imgAmpliada").src = src;
+    }
 
-    window.addEventListener('DOMContentLoaded', cargarCSV);
+    function cerrarModal() {
+      document.getElementById("modalImagen").style.display = "none";
+    }
+
+    cargarDatos();
   </script>
 
 </body>
