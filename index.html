@@ -1,99 +1,83 @@
 <!DOCTYPE html>
-<html lang="es"> <!-- Idioma del contenido es español -->
+<html lang="es">
 <head>
-  <meta charset="UTF-8" /> <!-- Codificación de caracteres UTF-8 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Para que se vea bien en móviles -->
-  <title>Estilo Prisma | Catálogo</title> <!-- Título de la pestaña del navegador -->
-  <link rel="stylesheet" href="style.css" /> <!-- Enlace a hoja de estilos externa -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estilo Prisma | Catálogo</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Título principal del catálogo -->
   <h1 class="titulo">Catálogo Estilo Prisma</h1>
 
-  <!-- Contenedor de filtros -->
-  <div class="filtros">
-    <select id="categoriaFiltro">
-      <option value="">Todas las categorías</option> <!-- Opción por defecto -->
-    </select>
-    <button onclick="filtrarProductos()">Filtrar</button> <!-- Llama a la función para filtrar productos -->
+  <!-- Menú lateral de categorías -->
+  <div class="menu-lateral" id="menuCategorias">
+    <button onclick="filtrarProductos('')">Todas</button>
+    <!-- Botones de categorías generados por JS -->
   </div>
 
-  <!-- Contenedor donde se mostrarán las tarjetas de productos -->
-  <div class="contenedor" id="catalogo"></div>
+  <!-- Contenedor principal que agrupa menú y catálogo -->
+  <div class="principal">
+    <div class="contenedor" id="catalogo"></div>
+  </div>
 
-  <!-- Modal para ampliar la vista del producto cuando se hace clic -->
+  <!-- Modal de imagen -->
   <div id="modalImagen">
-    <span onclick="cerrarModal()">&times;</span> <!-- Botón para cerrar el modal -->
-    <div class="modal-contenido" id="contenidoModal">
-      <!-- El contenido del producto se genera dinámicamente con JavaScript -->
-    </div>
+    <span onclick="cerrarModal()">&times;</span>
+    <div class="modal-contenido" id="contenidoModal"></div>
   </div>
 
-  <!-- Botón flotante de WhatsApp para contacto rápido -->
+  <!-- Botón de WhatsApp -->
   <a href="https://wa.me/573227490934" target="_blank" title="¡Escríbenos por WhatsApp!" 
      style="position:fixed; bottom:20px; right:20px; background-color:#25d366; color:white; border-radius:50%; width:60px; height:60px; text-align:center; font-size:30px; line-height:60px; box-shadow:0 2px 5px rgba(0,0,0,0.3); z-index:999; text-decoration:none;">
     💬
   </a>
 
-  <!-- Lógica JavaScript -->
   <script>
-    // Array global donde se almacenan los productos después de cargar el CSV
     let productos = [];
 
-    // Función para cargar los datos del archivo CSV
     function cargarDatos() {
-      fetch('chips.csv') // Se lee el archivo CSV desde el servidor
-        .then(res => res.text()) // Se convierte el contenido en texto
+      fetch('chips.csv')
+        .then(res => res.text())
         .then(data => {
-          const lineas = data.trim().split('\n'); // Se separan las líneas del archivo
-          const headers = lineas[0].split(','); // La primera línea se usa como nombres de columnas
-          
-          // Se transforma cada línea en un objeto usando los encabezados
+          const lineas = data.trim().split('\n');
+          const headers = lineas[0].split(',');
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
             return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
           });
 
-          // Extrae categorías únicas para el filtro
+          // Categorías únicas
           const categorias = [...new Set(productos.map(p => p.Categoría))];
-          const select = document.getElementById('categoriaFiltro');
+          const menu = document.getElementById('menuCategorias');
 
-          // Llena el select con las categorías
           categorias.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            select.appendChild(opt);
+            const btn = document.createElement('button');
+            btn.textContent = cat;
+            btn.onclick = () => filtrarProductos(cat);
+            menu.appendChild(btn);
           });
 
-          // Muestra todos los productos al inicio
           mostrarProductos(productos);
         })
         .catch(error => {
-          // Manejo de error si el archivo CSV no se carga correctamente
           console.error("Error cargando el archivo CSV:", error);
           document.getElementById('catalogo').innerHTML = "<p>Error al cargar productos.</p>";
         });
     }
 
-    // Función para mostrar productos en pantalla
     function mostrarProductos(lista) {
       const contenedor = document.getElementById('catalogo');
-      contenedor.innerHTML = ''; // Limpia el contenedor antes de agregar nuevos productos
+      contenedor.innerHTML = '';
 
-      // Si no hay productos, muestra un mensaje
       if (lista.length === 0) {
         contenedor.innerHTML = "<p>No hay productos disponibles.</p>";
         return;
       }
 
-      // Crea una tarjeta por cada producto
       lista.forEach(p => {
         const tarjeta = document.createElement('div');
-        tarjeta.className = 'producto'; // Clase para aplicar estilos
+        tarjeta.className = 'producto';
 
-        // Estructura HTML del producto
         tarjeta.innerHTML = `
           <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
           <h3>${p.Imagen}</h3>
@@ -101,32 +85,23 @@
           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
         `;
 
-        // Al hacer clic en el producto se abre el modal
         tarjeta.onclick = () => ampliarProducto(p);
-
-        // Se añade al contenedor
         contenedor.appendChild(tarjeta);
       });
     }
 
-    // Función para filtrar los productos por categoría
-    function filtrarProductos() {
-      const cat = document.getElementById('categoriaFiltro').value;
-      // Si hay categoría seleccionada, se filtran; si no, se muestran todos
-      const filtrados = cat ? productos.filter(p => p.Categoría === cat) : productos;
+    function filtrarProductos(categoria) {
+      const filtrados = categoria ? productos.filter(p => p.Categoría === categoria) : productos;
       mostrarProductos(filtrados);
     }
 
-    // Función para mostrar detalles del producto en el modal
     function ampliarProducto(p) {
       const modal = document.getElementById("modalImagen");
       const contenido = document.getElementById("contenidoModal");
 
-      // Mensaje personalizado para WhatsApp
       const mensaje = `Hola, estoy interesado en este producto: ${p.Imagen} (${p.Color}) por $${Number(p.Precio).toLocaleString()}`;
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
-      // Estructura del modal con datos del producto
       contenido.innerHTML = `
         <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
         <h2>${p.Imagen}</h2>
@@ -137,15 +112,13 @@
         <a href="${linkWhatsapp}" target="_blank" style="display:inline-block; background-color:#25d366; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">Escribir por WhatsApp</a>
       `;
 
-      modal.style.display = "block"; // Muestra el modal
+      modal.style.display = "block";
     }
 
-    // Función para cerrar el modal
     function cerrarModal() {
       document.getElementById("modalImagen").style.display = "none";
     }
 
-    // Se llama la función principal al cargar la página
     cargarDatos();
   </script>
 </body>
