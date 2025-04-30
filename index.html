@@ -2,155 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estilo Prisma | Catálogo</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    .titulo {
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .filtros {
-      text-align: center;
-      margin: 10px 0;
-    }
-
-    .contenedor {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      padding: 10px;
-    }
-
-    .producto {
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      width: 220px;
-      padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    .producto img {
-      max-width: 100%;
-      height: 180px;
-      object-fit: contain;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .producto h3 {
-      margin: 10px 0 5px;
-      font-size: 16px;
-    }
-
-    .precio {
-      color: green;
-      font-weight: bold;
-    }
-
-    .btn-wsp {
-      display: inline-block;
-      background-color: #25d366;
-      color: white;
-      padding: 8px 16px;
-      margin-top: 10px;
-      text-decoration: none;
-      border-radius: 20px;
-      font-size: 14px;
-    }
-
-    /* Modal imagen ampliada */
-    #modalImagen {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      padding-top: 60px;
-      left: 0;
-      top: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.9);
-      text-align: center;
-    }
-
-    #modalImagen img {
-      max-width: 90%;
-      max-height: 80vh;
-      border-radius: 10px;
-    }
-
-    #modalImagen span {
-      position: absolute;
-      top: 20px;
-      right: 40px;
-      color: #fff;
-      font-size: 40px;
-      cursor: pointer;
-    }
-
-    /* Botón flotante de WhatsApp */
-    .btn-whatsapp {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #25d366;
-      color: white;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      text-align: center;
-      font-size: 30px;
-      line-height: 60px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      z-index: 999;
-      text-decoration: none;
-    }
-
-    .btn-whatsapp:hover {
-      background-color: #1ebe5c;
-    }
-
-    /* Íconos flotantes */
-    .icono-fondo {
-      position: fixed;
-      width: 20px;
-      height: 20px;
-      opacity: 0.1;
-      animation: flotar linear infinite;
-      z-index: 0;
-    }
-
-    @keyframes flotar {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-100vh); }
-    }
-  </style>
 </head>
 <body>
-
-  <!-- Íconos flotantes -->
-  <script>
-    for (let i = 0; i < 20; i++) {
-      const icon = document.createElement("img");
-      icon.src = "imagenes/icono.png";
-      icon.className = "icono-fondo";
-      icon.style.top = `${Math.random() * 100}vh`;
-      icon.style.left = `${Math.random() * 100}vw`;
-      icon.style.animationDuration = `${10 + Math.random() * 20}s`;
-      icon.style.transform = `rotate(${Math.random() * 360}deg)`;
-      document.body.appendChild(icon);
-    }
-  </script>
 
   <h1 class="titulo">Catálogo Estilo Prisma</h1>
 
@@ -163,10 +19,12 @@
 
   <div class="contenedor" id="catalogo"></div>
 
-  <!-- Modal para ampliar imagen -->
+  <!-- Modal para ampliar producto completo -->
   <div id="modalImagen">
     <span onclick="cerrarModal()">&times;</span>
-    <img id="imgAmpliada" src="" alt="Producto ampliado" />
+    <div class="modal-contenido" id="contenidoModal">
+      <!-- Se llena dinámicamente -->
+    </div>
   </div>
 
   <!-- Botón flotante de WhatsApp -->
@@ -208,13 +66,13 @@
         tarjeta.className = 'producto';
 
         tarjeta.innerHTML = `
-          <img src="imagenes/${p.Name}" alt="${p.Categoría}" onclick="ampliarImagen('imagenes/${p.Name}')" />
-          <h3>${p.Nombre || p.Categoría}</h3>
+          <img src="imagenes/${p.Name}" alt="${p.Categoría}" />
+          <h3>${p.Imagen}</h3>
           <p>${p.Color}</p>
           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
-          <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
         `;
 
+        tarjeta.onclick = () => ampliarProducto(p);
         contenedor.appendChild(tarjeta);
       });
     }
@@ -225,9 +83,19 @@
       mostrarProductos(filtrados);
     }
 
-    function ampliarImagen(src) {
-      document.getElementById("modalImagen").style.display = "block";
-      document.getElementById("imgAmpliada").src = src;
+    function ampliarProducto(p) {
+      const modal = document.getElementById("modalImagen");
+      const contenido = document.getElementById("contenidoModal");
+
+      contenido.innerHTML = `
+        <img src="imagenes/${p.Name}" alt="${p.Categoría}" />
+        <h2>${p.Imagen}</h2>
+        <p><strong>Color:</strong> ${p.Color}</p>
+        <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
+        <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
+      `;
+
+      modal.style.display = "block";
     }
 
     function cerrarModal() {
@@ -236,6 +104,5 @@
 
     cargarDatos();
   </script>
-
 </body>
 </html>
