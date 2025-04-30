@@ -3,34 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estilo Prisma | Catálogo</title>
+  <title>Catálogo Estilo Prisma</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1 class="titulo">Catálogo Estilo Prisma</h1>
+  <header>
+    <h1>Catálogo Estilo Prisma</h1>
+  </header>
 
-  <!-- Menú lateral de categorías -->
-  <div class="menu-lateral" id="menuCategorias">
-    <button onclick="filtrarProductos('')">Todas</button>
-    <!-- Botones de categorías generados por JS -->
-  </div>
+  <main class="contenedor-principal">
+    <aside class="menu-lateral" id="menuCategorias">
+      <h3>Categorías</h3>
+      <button onclick="filtrarProductos('')">Todas</button>
+      <!-- Botones generados dinámicamente -->
+    </aside>
 
-  <!-- Contenedor principal que agrupa menú y catálogo -->
-  <div class="principal">
-    <div class="contenedor" id="catalogo"></div>
-  </div>
+    <section class="catalogo" id="catalogo">
+      <!-- Productos generados por JS -->
+    </section>
+  </main>
 
-  <!-- Modal de imagen -->
+  <!-- Modal para producto -->
   <div id="modalImagen">
     <span onclick="cerrarModal()">&times;</span>
     <div class="modal-contenido" id="contenidoModal"></div>
   </div>
 
   <!-- Botón de WhatsApp -->
-  <a href="https://wa.me/573227490934" target="_blank" title="¡Escríbenos por WhatsApp!" 
-     style="position:fixed; bottom:20px; right:20px; background-color:#25d366; color:white; border-radius:50%; width:60px; height:60px; text-align:center; font-size:30px; line-height:60px; box-shadow:0 2px 5px rgba(0,0,0,0.3); z-index:999; text-decoration:none;">
-    💬
-  </a>
+  <a href="https://wa.me/573227490934" target="_blank" class="boton-wsp" title="¡Escríbenos por WhatsApp!">💬</a>
 
   <script>
     let productos = [];
@@ -46,10 +46,8 @@
             return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
           });
 
-          // Categorías únicas
           const categorias = [...new Set(productos.map(p => p.Categoría))];
           const menu = document.getElementById('menuCategorias');
-
           categorias.forEach(cat => {
             const btn = document.createElement('button');
             btn.textContent = cat;
@@ -57,7 +55,7 @@
             menu.appendChild(btn);
           });
 
-          mostrarProductos(productos);
+          mostrarProductos(productos); // Mostrar todos al cargar
         })
         .catch(error => {
           console.error("Error cargando el archivo CSV:", error);
@@ -80,9 +78,11 @@
 
         tarjeta.innerHTML = `
           <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
-          <h3>${p.Imagen}</h3>
-          <p>${p.Color}</p>
-          <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
+          <div class="info">
+            <h3>${p.Imagen}</h3>
+            <p>${p.Color}</p>
+            <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
+          </div>
         `;
 
         tarjeta.onclick = () => ampliarProducto(p);
@@ -107,9 +107,8 @@
         <h2>${p.Imagen}</h2>
         <p><strong>Color:</strong> ${p.Color}</p>
         <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
-        <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
-        <br><br>
-        <a href="${linkWhatsapp}" target="_blank" style="display:inline-block; background-color:#25d366; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">Escribir por WhatsApp</a>
+        <a href="${p.Enlace}" target="_blank" class="btn-compra">Comprar</a>
+        <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">WhatsApp</a>
       `;
 
       modal.style.display = "block";
