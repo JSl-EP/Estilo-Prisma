@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- Menú lateral estilo profesional -->
+  <!-- Menú lateral con categorías -->
   <nav id="menu" class="menu">
     <div class="menu-header">
       <div class="logo">
@@ -19,56 +19,21 @@
       <span class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></span>
     </div>
     
-    <div class="menu-items">
-      <div class="menu-item active">
-        <i class="fas fa-home"></i>
-        <span>Inicio</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-search"></i>
-        <span>Explorar</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-bell"></i>
-        <span>Notificaciones</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-envelope"></i>
-        <span>Mensajes</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-bookmark"></i>
-        <span>Guardados</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-list"></i>
-        <span>Listas</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-user"></i>
-        <span>Perfil</span>
-      </div>
-      
-      <div class="menu-item">
-        <i class="fas fa-ellipsis-h"></i>
-        <span>Más opciones</span>
+    <div class="menu-items" id="categoriasList">
+      <!-- Las categorías se generarán dinámicamente con JavaScript -->
+      <div class="menu-item active" id="todos-productos">
+        <i class="fas fa-th-large"></i>
+        <span>Todos los productos</span>
+        <span class="badge" id="total-productos">0</span>
       </div>
     </div>
     
-    <div class="menu-categorias">
-      <h3>Filtrar por categoría</h3>
-      <select id="categoriaFiltro">
-        <option value="">Todas las categorías</option> 
-      </select>
-      <button onclick="filtrarProductos()" class="btn-filtrar">
-        <i class="fas fa-filter"></i> Filtrar
-      </button>
+    <div class="menu-search">
+      <h3>Buscar productos</h3>
+      <div class="search-box">
+        <input type="text" id="busqueda" placeholder="Buscar...">
+        <button onclick="buscarProductos()"><i class="fas fa-search"></i></button>
+      </div>
     </div>
   </nav>
 
@@ -94,10 +59,48 @@
   <!-- Lógica JavaScript -->
   <script>
     let productos = [];
+    let categorias = [];
+
+    // Mapeo de categorías a iconos (personaliza según tus categorías)
+    const iconosCategorias = {
+      "Ropa": "fas fa-tshirt",
+      "Chaquetas": "fas fa-jacket",
+      "Camisas": "fas fa-shirt",
+      "Pantalones": "fas fa-tshirt",
+      "Vestidos": "fas fa-tshirt",
+      "Zapatos": "fas fa-shoe-prints",
+      "Accesorios": "fas fa-glasses",
+      "Bolsos": "fas fa-shopping-bag",
+      "Joyeria": "fas fa-gem",
+      "Deportes": "fas fa-running",
+      "Niños": "fas fa-child",
+      "Hogar": "fas fa-home",
+      "Tecnología": "fas fa-laptop",
+      // Agrega más categorías según tu CSV
+    };
+
+    // Función para obtener el icono correspondiente a una categoría
+    function obtenerIconoCategoria(categoria) {
+      // Buscar coincidencia exacta
+      if (iconosCategorias[categoria]) {
+        return iconosCategorias[categoria];
+      }
+      
+      // Buscar coincidencia parcial
+      const categoriaLower = categoria.toLowerCase();
+      for (const key in iconosCategorias) {
+        if (categoriaLower.includes(key.toLowerCase())) {
+          return iconosCategorias[key];
+        }
+      }
+      
+      // Icono por defecto
+      return "fas fa-tag";
+    }
 
     // Función para cargar los datos del archivo CSV
     function cargarDatos() {
-      fetch('chips.csv') // Se lee el archivo CSV
+      fetch('chips.csv')
         .then(res => res.text()) 
         .then(data => {
           const lineas = data.trim().split('\n');
@@ -108,22 +111,60 @@
             return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
           });
 
-          const categorias = [...new Set(productos.map(p => p.Categoría))];
-          const select = document.getElementById('categoriaFiltro');
-
-          categorias.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            select.appendChild(opt);
-          });
-
+          // Obtener categorías únicas desde el CSV
+          categorias = [...new Set(productos.map(p => p.Categoría))];
+          
+          // Actualizar contador de "Todos los productos"
+          document.getElementById('total-productos').textContent = productos.length;
+          
+          // Generar el menú de categorías
+          generarMenuCategorias();
+          
+          // Mostrar todos los productos inicialmente
           mostrarProductos(productos);
         })
         .catch(error => {
           console.error("Error cargando el archivo CSV:", error);
-          document.getElementById('catalogo').innerHTML = "<p>Error al cargar productos.</p>";
+          document.getElementById('catalogo').innerHTML = "<p>Error al cargar productos. Verifica que el archivo chips.csv exista.</p>";
         });
+    }
+
+    // Función para generar el menú de categorías
+    function generarMenuCategorias() {
+      const categoriasList = document.getElementById('categoriasList');
+      
+      // Limpiar solo los ítems de categoría (mantener "Todos los productos")
+      const todosItem = document.getElementById('todos-productos');
+      categoriasList.innerHTML = '';
+      categoriasList.appendChild(todosItem);
+      
+      // Añadir cada categoría encontrada en el CSV
+      categorias.forEach(cat => {
+        const cantidad = productos.filter(p => p.Categoría === cat).length;
+        const icono = obtenerIconoCategoria(cat);
+        
+        const item = document.createElement('div');
+        item.className = 'menu-item';
+        item.innerHTML = `
+          <i class="${icono}"></i>
+          <span>${cat}</span>
+          <span class="badge">${cantidad}</span>
+        `;
+        item.onclick = () => {
+          document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+          item.classList.add('active');
+          const productosFiltrados = productos.filter(p => p.Categoría === cat);
+          mostrarProductos(productosFiltrados);
+        };
+        categoriasList.appendChild(item);
+      });
+      
+      // Configurar evento para "Todos los productos"
+      todosItem.onclick = () => {
+        document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+        todosItem.classList.add('active');
+        mostrarProductos(productos);
+      };
     }
 
     function mostrarProductos(lista) {
@@ -131,7 +172,7 @@
       contenedor.innerHTML = '';
 
       if (lista.length === 0) {
-        contenedor.innerHTML = "<p>No hay productos disponibles.</p>";
+        contenedor.innerHTML = "<p>No hay productos en esta categoría.</p>";
         return;
       }
 
@@ -148,10 +189,21 @@
       });
     }
 
-    function filtrarProductos() {
-      const cat = document.getElementById('categoriaFiltro').value;
-      const filtrados = cat ? productos.filter(p => p.Categoría === cat) : productos;
-      mostrarProductos(filtrados);
+    function buscarProductos() {
+      const termino = document.getElementById('busqueda').value.toLowerCase();
+      if (!termino) {
+        mostrarProductos(productos);
+        return;
+      }
+      
+      const resultados = productos.filter(p => 
+        p.Imagen.toLowerCase().includes(termino) || 
+        p.Categoría.toLowerCase().includes(termino) ||
+        (p.Color && p.Color.toLowerCase().includes(termino)) ||
+        (p.Descripción && p.Descripción.toLowerCase().includes(termino))
+      );
+      
+      mostrarProductos(resultados);
     }
 
     function ampliarProducto(p) {
@@ -163,10 +215,10 @@
       contenido.innerHTML = 
         `<img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
          <h2>${p.Imagen}</h2>
+         <p><strong>Categoría:</strong> ${p.Categoría}</p>
          <p><strong>Color:</strong> ${p.Color}</p>
          <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
-         <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
-         <br><br>
+         ${p.Enlace ? `<a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a><br><br>` : ''}
          <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">Escribir por WhatsApp</a>`;
 
       modal.style.display = "block";
@@ -179,6 +231,13 @@
     function toggleMenu() {
       document.getElementById("menu").classList.toggle("menu-visible");
     }
+
+    // Permitir búsqueda al presionar Enter
+    document.getElementById('busqueda').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        buscarProductos();
+      }
+    });
 
     cargarDatos();
   </script>
