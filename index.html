@@ -1,46 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Estilo Prisma</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo Virtual</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f6f6f6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .icono-fondo {
+      position: fixed;
+      z-index: -1;
+      width: 40px;
+      height: 40px;
+      opacity: 0.08;
+      animation: flotar 20s linear infinite;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(100vh) rotate(0deg); }
+      100% { transform: translateY(-100vh) rotate(360deg); }
+    }
+
+    .titulo {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 2em;
+    }
+
+    .filtros {
+      text-align: center;
+      margin: 20px;
+    }
+
+    select, button {
+      padding: 10px;
+      margin: 0 5px;
+    }
+
+    .contenedor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .producto {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .producto:hover {
+      transform: scale(1.03);
+    }
+
+    .producto img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .precio {
+      color: #e91e63;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .btn-wsp {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #25d366;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .btn-wsp:hover {
+      background-color: #1ebe5c;
+    }
+  </style>
 </head>
 <body>
 
-<div class="fondo-animado">
-  <img src="icons/top.svg" class="icono flotante1" alt="Top">
-  <img src="icons/corset.svg" class="icono flotante2" alt="Corset">
-  <img src="icons/percha.svg" class="icono flotante3" alt="Percha">
-</div>
+  <h1 class="titulo">Catálogo Virtual</h1>
 
-<h1>Estilo Prisma</h1>
+  <div class="filtros">
+    <select id="filtroCategoria">
+      <option value="Todas">Todas las categorías</option>
+    </select>
+    <button id="quitarFiltro">Quitar filtro</button>
+  </div>
 
-<select id="filtroCategoria">
-  <option value="Todas">Todas las categorías</option>
-</select>
-<button id="quitarFiltro">Quitar Filtro</button>
+  <div class="contenedor" id="productosContainer"></div>
 
-<input type="file" id="archivoCSV" accept=".csv">
+  <!-- Íconos flotantes como fondo -->
+  <script>
+    const iconos = ['icons/icon1.png', 'icons/icon2.png', 'icons/icon3.png']; // Agrega aquí los iconos que quieras
 
-<div id="productosContainer"></div>
+    for (let i = 0; i < 30; i++) {
+      const icono = document.createElement('img');
+      icono.src = iconos[Math.floor(Math.random() * iconos.length)];
+      icono.classList.add('icono-fondo');
+      icono.style.top = `${Math.random() * 100}vh`;
+      icono.style.left = `${Math.random() * 100}vw`;
+      icono.style.animationDuration = `${10 + Math.random() * 20}s`;
+      document.body.appendChild(icono);
+    }
+  </script>
 
-<script>
-  let todosLosProductos = [];
+  <script>
+    let todosLosProductos = [];
 
-  document.getElementById('archivoCSV').addEventListener('change', function (e) {
-    const archivo = e.target.files[0];
-    const lector = new FileReader();
+    async function cargarCSV() {
+      try {
+        const respuesta = await fetch('chips.csv');
+        const texto = await respuesta.text();
+        procesarCSV(texto);
+      } catch (error) {
+        console.error('Error al cargar el CSV:', error);
+      }
+    }
 
-    lector.onload = function (event) {
-      const texto = event.target.result;
+    function procesarCSV(texto) {
       const lineas = texto.trim().split('\n');
       const encabezados = lineas[0].split(',');
 
       const productos = lineas.slice(1).map(linea => {
-        const datos = linea.split(',');
+        const datos = linea.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Manejo de comas entre comillas
         const producto = {};
         encabezados.forEach((campo, i) => {
-          producto[campo.trim()] = datos[i] ? datos[i].trim() : '';
+          producto[campo.trim().toLowerCase()] = datos[i] ? datos[i].trim().replace(/^"|"$/g, '') : '';
         });
         return producto;
       });
@@ -48,59 +148,63 @@
       todosLosProductos = productos;
       cargarCategorias(productos);
       mostrarProductos(productos);
-    };
+    }
 
-    lector.readAsText(archivo);
-  });
+    function cargarCategorias(productos) {
+      const filtro = document.getElementById('filtroCategoria');
+      const categorias = [...new Set(productos.map(p => p['categoría']).filter(Boolean))];
+      filtro.innerHTML = `<option value="Todas">Todas las categorías</option>`;
+      categorias.forEach(cat => {
+        const opcion = document.createElement('option');
+        opcion.value = cat;
+        opcion.textContent = cat;
+        filtro.appendChild(opcion);
+      });
+    }
 
-  function cargarCategorias(productos) {
-    const filtro = document.getElementById('filtroCategoria');
-    const categorias = [...new Set(productos.map(p => p['Categoría']).filter(Boolean))];
+    function mostrarProductos(productos) {
+      const contenedor = document.getElementById('productosContainer');
+      contenedor.innerHTML = '';
 
-    filtro.innerHTML = `<option value="Todas">Todas las categorías</option>`;
-    categorias.forEach(cat => {
-      const opcion = document.createElement('option');
-      opcion.value = cat;
-      opcion.textContent = cat;
-      filtro.appendChild(opcion);
+      productos.forEach(producto => {
+        if (!producto.name || !producto.precio) return;
+
+        const nombreImagen = producto.name;
+        const rutaImagen = `imagenes/${nombreImagen}`;
+
+        const div = document.createElement('div');
+        div.className = 'producto';
+
+        div.innerHTML = `
+          <img src="${rutaImagen}" alt="${producto.name}" onerror="this.src='imagenes/placeholder.png'">
+          <h3>${producto.name}</h3>
+          <p class="precio">$${parseInt(producto.precio).toLocaleString()}</p>
+          <p><strong>Talla:</strong> ${producto.talla}</p>
+          <p><strong>Color:</strong> ${producto.color}</p>
+          <p><strong>Categoría:</strong> ${producto['categoría']}</p>
+          <a class="btn-wsp" target="_blank"
+             href="https://wa.me/573227490934?text=Hola,%20quiero%20el%20producto%20${encodeURIComponent(producto.name)}%20en%20color%20${encodeURIComponent(producto.color)}%20y%20talla%20${encodeURIComponent(producto.talla)}.">Comprar por WhatsApp</a>
+        `;
+
+        contenedor.appendChild(div);
+      });
+    }
+
+    document.getElementById('filtroCategoria').addEventListener('change', function () {
+      const categoriaSeleccionada = this.value;
+      const filtrados = categoriaSeleccionada === 'Todas'
+        ? todosLosProductos
+        : todosLosProductos.filter(p => p['categoría'] === categoriaSeleccionada);
+      mostrarProductos(filtrados);
     });
-  }
 
-  function mostrarProductos(productos) {
-    const contenedor = document.getElementById('productosContainer');
-    contenedor.innerHTML = '';
-
-    productos.forEach(producto => {
-      if (!producto.Enlace || !producto.Name || !producto.Precio) return;
-
-      const div = document.createElement('div');
-      div.className = 'producto';
-
-      div.innerHTML = `
-        <img src="${producto.Enlace}" alt="Producto">
-        <h3>${producto.Name}</h3>
-        <p class="precio">$${parseInt(producto.Precio).toLocaleString()}</p>
-        <p class="categoria">${producto['Categoría']}</p>
-      `;
-
-      contenedor.appendChild(div);
+    document.getElementById('quitarFiltro').addEventListener('click', function () {
+      document.getElementById('filtroCategoria').value = 'Todas';
+      mostrarProductos(todosLosProductos);
     });
-  }
 
-  document.getElementById('filtroCategoria').addEventListener('change', function () {
-    const categoriaSeleccionada = this.value;
-    const filtrados = categoriaSeleccionada === 'Todas'
-      ? todosLosProductos
-      : todosLosProductos.filter(p => p['Categoría'] === categoriaSeleccionada);
-
-    mostrarProductos(filtrados);
-  });
-
-  document.getElementById('quitarFiltro').addEventListener('click', function () {
-    document.getElementById('filtroCategoria').value = 'Todas';
-    mostrarProductos(todosLosProductos);
-  });
-</script>
+    window.addEventListener('DOMContentLoaded', cargarCSV);
+  </script>
 
 </body>
 </html>
