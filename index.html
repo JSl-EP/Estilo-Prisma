@@ -75,18 +75,29 @@
       "Niños": "fas fa-child",
       "Hogar": "fas fa-home",
       "Tecnología": "fas fa-laptop",
-      // Agrega más categorías según tu CSV
     };
+
+    // Función para limpiar texto (quitar comillas)
+    function limpiarTexto(texto) {
+      return texto ? texto.replace(/"/g, '') : '';
+    }
+
+    // Función para formatear precio
+    function formatearPrecio(precio) {
+      const numero = precio ? Number(precio.replace(/[^0-9.]/g, '')) : 0;
+      return `$${numero.toLocaleString()}`;
+    }
 
     // Función para obtener el icono correspondiente a una categoría
     function obtenerIconoCategoria(categoria) {
+      const catLimpia = limpiarTexto(categoria);
       // Buscar coincidencia exacta
-      if (iconosCategorias[categoria]) {
-        return iconosCategorias[categoria];
+      if (iconosCategorias[catLimpia]) {
+        return iconosCategorias[catLimpia];
       }
       
       // Buscar coincidencia parcial
-      const categoriaLower = categoria.toLowerCase();
+      const categoriaLower = catLimpia.toLowerCase();
       for (const key in iconosCategorias) {
         if (categoriaLower.includes(key.toLowerCase())) {
           return iconosCategorias[key];
@@ -103,15 +114,15 @@
         .then(res => res.text()) 
         .then(data => {
           const lineas = data.trim().split('\n');
-          const headers = lineas[0].split(',');
+          const headers = lineas[0].split(',').map(h => limpiarTexto(h.trim()));
           
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
-            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
+            return Object.fromEntries(headers.map((h, i) => [h, limpiarTexto(valores[i]?.trim())));
           });
 
           // Obtener categorías únicas desde el CSV
-          categorias = [...new Set(productos.map(p => p.Categoría))];
+          categorias = [...new Set(productos.map(p => p.Categoría))].filter(Boolean);
           
           // Generar el menú de categorías
           generarMenuCategorias();
@@ -142,7 +153,7 @@
         item.className = 'menu-item';
         item.innerHTML = `
           <i class="${icono}"></i>
-          <span>${cat}</span>
+          <span>${limpiarTexto(cat)}</span>
         `;
         item.onclick = () => {
           document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
@@ -174,27 +185,27 @@
         const tarjeta = document.createElement('div');
         tarjeta.className = 'producto';
         tarjeta.innerHTML = 
-          `<img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
-           <h3>${p.Imagen}</h3>
-           <p>${p.Color}</p>
-           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>`;
+          `<img src="imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
+           <h3>${limpiarTexto(p.Imagen)}</h3>
+           <p>${limpiarTexto(p.Color)}</p>
+           <p class="precio">${formatearPrecio(p.Precio)}</p>`;
         tarjeta.onclick = () => ampliarProducto(p);
         contenedor.appendChild(tarjeta);
       });
     }
 
     function buscarProductos() {
-      const termino = document.getElementById('busqueda').value.toLowerCase();
+      const termino = limpiarTexto(document.getElementById('busqueda').value.toLowerCase());
       if (!termino) {
         mostrarProductos(productos);
         return;
       }
       
       const resultados = productos.filter(p => 
-        p.Imagen.toLowerCase().includes(termino) || 
-        p.Categoría.toLowerCase().includes(termino) ||
-        (p.Color && p.Color.toLowerCase().includes(termino)) ||
-        (p.Descripción && p.Descripción.toLowerCase().includes(termino))
+        limpiarTexto(p.Imagen).toLowerCase().includes(termino) || 
+        limpiarTexto(p.Categoría).toLowerCase().includes(termino) ||
+        limpiarTexto(p.Color).toLowerCase().includes(termino) ||
+        (p.Descripción && limpiarTexto(p.Descripción).toLowerCase().includes(termino))
       );
       
       mostrarProductos(resultados);
@@ -203,15 +214,15 @@
     function ampliarProducto(p) {
       const modal = document.getElementById("modalImagen");
       const contenido = document.getElementById("contenidoModal");
-      const mensaje = `Hola, estoy interesado en este producto: ${p.Imagen} (${p.Color}) por $${Number(p.Precio).toLocaleString()}`;
+      const mensaje = `Hola, estoy interesado en este producto: ${limpiarTexto(p.Imagen)} (${limpiarTexto(p.Color)}) por ${formatearPrecio(p.Precio)}`;
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
       contenido.innerHTML = 
-        `<img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
-         <h2>${p.Imagen}</h2>
-         <p><strong>Categoría:</strong> ${p.Categoría}</p>
-         <p><strong>Color:</strong> ${p.Color}</p>
-         <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
+        `<img src="imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
+         <h2>${limpiarTexto(p.Imagen)}</h2>
+         <p><strong>Categoría:</strong> ${limpiarTexto(p.Categoría)}</p>
+         <p><strong>Color:</strong> ${limpiarTexto(p.Color)}</p>
+         <p class="precio"><strong>Precio:</strong> ${formatearPrecio(p.Precio)}</p>
          ${p.Enlace ? `<a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a><br><br>` : ''}
          <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">Escribir por WhatsApp</a>`;
 
