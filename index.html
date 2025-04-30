@@ -2,65 +2,77 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catálogo Estilo Prisma</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estilo Prisma | Catálogo</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <h1>Catálogo Estilo Prisma</h1>
-  </header>
 
-  <main class="contenedor-principal">
-    <aside class="menu-lateral" id="menuCategorias">
-      <h3><i class="fas fa-list"></i> Categorías</h3>
-      <ul>
-        <li><button onclick="filtrarProductos('')"><i class="fas fa-border-all"></i> Todas</button></li>
-        <!-- Botones de categoría generados dinámicamente -->
-      </ul>
-    </aside>
+  <!-- Menú lateral -->
+  <nav id="menu" class="menu">
+    <div class="menu-header">
+      <h2>Catálogo</h2>
+      <span class="menu-toggle" onclick="toggleMenu()">☰</span>
+    </div>
+    <div class="menu-categorias">
+      <select id="categoriaFiltro">
+        <option value="">Todas las categorías</option> 
+      </select>
+      <button onclick="filtrarProductos()">Filtrar</button>
+    </div>
+    <ul id="categoriasList" class="categorias-list"></ul>
+  </nav>
 
-    <section class="catalogo" id="catalogo">
-      <!-- Productos cargados por JS -->
-    </section>
-  </main>
+  <!-- Contenido principal -->
+  <div id="contenidoPrincipal" class="contenido-principal">
+    <h1 class="titulo">Catálogo Estilo Prisma</h1>
 
-  <!-- Modal de producto -->
+    <!-- Contenedor donde se mostrarán las tarjetas de productos -->
+    <div class="contenedor" id="catalogo"></div>
+  </div>
+
+  <!-- Modal para ampliar la vista del producto cuando se hace clic -->
   <div id="modalImagen">
     <span onclick="cerrarModal()">&times;</span>
     <div class="modal-contenido" id="contenidoModal"></div>
   </div>
 
-  <!-- Botón WhatsApp -->
-  <a href="https://wa.me/573227490934" target="_blank" class="boton-wsp" title="¡Contáctanos!"><i class="fab fa-whatsapp"></i></a>
+  <!-- WhatsApp flotante -->
+  <a href="https://wa.me/573227490934" target="_blank" class="whatsapp-btn">
+    💬
+  </a>
 
+  <!-- Lógica JavaScript -->
   <script>
     let productos = [];
 
+    // Función para cargar los datos del archivo CSV
     function cargarDatos() {
-      fetch('chips.csv')
-        .then(res => res.text())
+      fetch('chips.csv') // Se lee el archivo CSV
+        .then(res => res.text()) 
         .then(data => {
           const lineas = data.trim().split('\n');
           const headers = lineas[0].split(',');
+          
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
-            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i]?.trim()]));
+            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
           });
 
           const categorias = [...new Set(productos.map(p => p.Categoría))];
-          const menu = document.getElementById('menuCategorias').querySelector('ul');
+          const select = document.getElementById('categoriaFiltro');
+
           categorias.forEach(cat => {
-            const li = document.createElement('li');
-            li.innerHTML = `<button onclick="filtrarProductos('${cat}')"><i class="fas fa-tag"></i> ${cat}</button>`;
-            menu.appendChild(li);
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
           });
 
-          mostrarProductos(productos); // Mostrar todos
+          mostrarProductos(productos);
         })
-        .catch(err => {
-          console.error("Error:", err);
+        .catch(error => {
+          console.error("Error cargando el archivo CSV:", error);
           document.getElementById('catalogo').innerHTML = "<p>Error al cargar productos.</p>";
         });
     }
@@ -68,6 +80,7 @@
     function mostrarProductos(lista) {
       const contenedor = document.getElementById('catalogo');
       contenedor.innerHTML = '';
+
       if (lista.length === 0) {
         contenedor.innerHTML = "<p>No hay productos disponibles.</p>";
         return;
@@ -76,39 +89,36 @@
       lista.forEach(p => {
         const tarjeta = document.createElement('div');
         tarjeta.className = 'producto';
-        tarjeta.innerHTML = `
-          <img src="imagenes/${p.Name}" alt="${p.Imagen}" loading="lazy" />
-          <div class="info">
-            <h3>${p.Imagen}</h3>
-            <p>${p.Color}</p>
-            <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
-          </div>
-        `;
+        tarjeta.innerHTML = 
+          `<img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
+           <h3>${p.Imagen}</h3>
+           <p>${p.Color}</p>
+           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>`;
         tarjeta.onclick = () => ampliarProducto(p);
         contenedor.appendChild(tarjeta);
       });
     }
 
-    function filtrarProductos(categoria) {
-      const filtrados = categoria ? productos.filter(p => p.Categoría === categoria) : productos;
+    function filtrarProductos() {
+      const cat = document.getElementById('categoriaFiltro').value;
+      const filtrados = cat ? productos.filter(p => p.Categoría === cat) : productos;
       mostrarProductos(filtrados);
     }
 
     function ampliarProducto(p) {
       const modal = document.getElementById("modalImagen");
       const contenido = document.getElementById("contenidoModal");
-
       const mensaje = `Hola, estoy interesado en este producto: ${p.Imagen} (${p.Color}) por $${Number(p.Precio).toLocaleString()}`;
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
-      contenido.innerHTML = `
-        <img src="imagenes/${p.Name}" alt="${p.Imagen}" />
-        <h2>${p.Imagen}</h2>
-        <p><strong>Color:</strong> ${p.Color}</p>
-        <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
-        <a href="${p.Enlace}" target="_blank" class="btn-compra">Comprar</a>
-        <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">WhatsApp</a>
-      `;
+      contenido.innerHTML = 
+        `<img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
+         <h2>${p.Imagen}</h2>
+         <p><strong>Color:</strong> ${p.Color}</p>
+         <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
+         <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
+         <br><br>
+         <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">Escribir por WhatsApp</a>`;
 
       modal.style.display = "block";
     }
@@ -117,7 +127,12 @@
       document.getElementById("modalImagen").style.display = "none";
     }
 
+    function toggleMenu() {
+      document.getElementById("menu").classList.toggle("menu-visible");
+    }
+
     cargarDatos();
   </script>
+
 </body>
 </html>
