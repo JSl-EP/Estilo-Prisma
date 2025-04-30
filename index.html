@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Catálogo Estilo Prisma</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <header>
@@ -13,24 +14,26 @@
 
   <main class="contenedor-principal">
     <aside class="menu-lateral" id="menuCategorias">
-      <h3>Categorías</h3>
-      <button onclick="filtrarProductos('')">Todas</button>
-      <!-- Botones generados dinámicamente -->
+      <h3><i class="fas fa-list"></i> Categorías</h3>
+      <ul>
+        <li><button onclick="filtrarProductos('')"><i class="fas fa-border-all"></i> Todas</button></li>
+        <!-- Botones de categoría generados dinámicamente -->
+      </ul>
     </aside>
 
     <section class="catalogo" id="catalogo">
-      <!-- Productos generados por JS -->
+      <!-- Productos cargados por JS -->
     </section>
   </main>
 
-  <!-- Modal para producto -->
+  <!-- Modal de producto -->
   <div id="modalImagen">
     <span onclick="cerrarModal()">&times;</span>
     <div class="modal-contenido" id="contenidoModal"></div>
   </div>
 
-  <!-- Botón de WhatsApp -->
-  <a href="https://wa.me/573227490934" target="_blank" class="boton-wsp" title="¡Escríbenos por WhatsApp!">💬</a>
+  <!-- Botón WhatsApp -->
+  <a href="https://wa.me/573227490934" target="_blank" class="boton-wsp" title="¡Contáctanos!"><i class="fab fa-whatsapp"></i></a>
 
   <script>
     let productos = [];
@@ -43,22 +46,21 @@
           const headers = lineas[0].split(',');
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
-            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i].trim()]));
+            return Object.fromEntries(headers.map((h, i) => [h.trim(), valores[i]?.trim()]));
           });
 
           const categorias = [...new Set(productos.map(p => p.Categoría))];
-          const menu = document.getElementById('menuCategorias');
+          const menu = document.getElementById('menuCategorias').querySelector('ul');
           categorias.forEach(cat => {
-            const btn = document.createElement('button');
-            btn.textContent = cat;
-            btn.onclick = () => filtrarProductos(cat);
-            menu.appendChild(btn);
+            const li = document.createElement('li');
+            li.innerHTML = `<button onclick="filtrarProductos('${cat}')"><i class="fas fa-tag"></i> ${cat}</button>`;
+            menu.appendChild(li);
           });
 
-          mostrarProductos(productos); // Mostrar todos al cargar
+          mostrarProductos(productos); // Mostrar todos
         })
-        .catch(error => {
-          console.error("Error cargando el archivo CSV:", error);
+        .catch(err => {
+          console.error("Error:", err);
           document.getElementById('catalogo').innerHTML = "<p>Error al cargar productos.</p>";
         });
     }
@@ -66,7 +68,6 @@
     function mostrarProductos(lista) {
       const contenedor = document.getElementById('catalogo');
       contenedor.innerHTML = '';
-
       if (lista.length === 0) {
         contenedor.innerHTML = "<p>No hay productos disponibles.</p>";
         return;
@@ -75,16 +76,14 @@
       lista.forEach(p => {
         const tarjeta = document.createElement('div');
         tarjeta.className = 'producto';
-
         tarjeta.innerHTML = `
-          <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
+          <img src="imagenes/${p.Name}" alt="${p.Imagen}" loading="lazy" />
           <div class="info">
             <h3>${p.Imagen}</h3>
             <p>${p.Color}</p>
             <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
           </div>
         `;
-
         tarjeta.onclick = () => ampliarProducto(p);
         contenedor.appendChild(tarjeta);
       });
@@ -103,7 +102,7 @@
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
       contenido.innerHTML = `
-        <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
+        <img src="imagenes/${p.Name}" alt="${p.Imagen}" />
         <h2>${p.Imagen}</h2>
         <p><strong>Color:</strong> ${p.Color}</p>
         <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
