@@ -162,4 +162,29 @@ h1 {
   text-decoration: none;
 }
 
-@media (max-width:
+@media (max-width: 768px) {
+  #menu {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: -100%;
+    transform: translateX(0);
+    z-index: 999;
+  }
+
+  #menu.menu-visible {
+    left: 0;
+  }
+
+  .contenido-principal {
+    margin-left: 0;
+  }
+
+  #catalogo {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .producto img {
+    width: 100%;
+  }
+}
