@@ -5,22 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estilo Prisma | Catálogo</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-  <!-- Menú lateral -->
+  <!-- Menú lateral estilo profesional -->
   <nav id="menu" class="menu">
     <div class="menu-header">
-      <h2>Catálogo</h2>
-      <span class="menu-toggle" onclick="toggleMenu()">☰</span>
+      <div class="logo">
+        <i class="fas fa-gem"></i>
+        <h2>Estilo Prisma</h2>
+      </div>
+      <span class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></span>
     </div>
+    
+    <div class="menu-items">
+      <div class="menu-item active">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-search"></i>
+        <span>Explorar</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-bell"></i>
+        <span>Notificaciones</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-envelope"></i>
+        <span>Mensajes</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-bookmark"></i>
+        <span>Guardados</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-list"></i>
+        <span>Listas</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-user"></i>
+        <span>Perfil</span>
+      </div>
+      
+      <div class="menu-item">
+        <i class="fas fa-ellipsis-h"></i>
+        <span>Más opciones</span>
+      </div>
+    </div>
+    
     <div class="menu-categorias">
+      <h3>Filtrar por categoría</h3>
       <select id="categoriaFiltro">
         <option value="">Todas las categorías</option> 
       </select>
-      <button onclick="filtrarProductos()">Filtrar</button>
+      <button onclick="filtrarProductos()" class="btn-filtrar">
+        <i class="fas fa-filter"></i> Filtrar
+      </button>
     </div>
-    <ul id="categoriasList" class="categorias-list"></ul>
   </nav>
 
   <!-- Contenido principal -->
@@ -39,7 +88,7 @@
 
   <!-- WhatsApp flotante -->
   <a href="https://wa.me/573227490934" target="_blank" class="whatsapp-btn">
-    💬
+    <i class="fab fa-whatsapp"></i>
   </a>
 
   <!-- Lógica JavaScript -->
