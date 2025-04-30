@@ -28,7 +28,10 @@
   </div>
 
   <!-- Botón flotante de WhatsApp -->
-  <a href="https://wa.me/573227490934" class="btn-whatsapp" target="_blank" title="¡Escríbenos por WhatsApp!">📱</a>
+  <a href="https://wa.me/573227490934" target="_blank" title="¡Escríbenos por WhatsApp!" 
+     style="position:fixed; bottom:20px; right:20px; background-color:#25d366; color:white; border-radius:50%; width:60px; height:60px; text-align:center; font-size:30px; line-height:60px; box-shadow:0 2px 5px rgba(0,0,0,0.3); z-index:999; text-decoration:none;">
+    💬
+  </a>
 
   <script>
     let productos = [];
@@ -66,7 +69,7 @@
         tarjeta.className = 'producto';
 
         tarjeta.innerHTML = `
-          <img src="imagenes/${p.Name}" alt="${p.Categoría}" />
+          <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
           <h3>${p.Imagen}</h3>
           <p>${p.Color}</p>
           <p class="precio">$${Number(p.Precio).toLocaleString()}</p>
@@ -87,12 +90,17 @@
       const modal = document.getElementById("modalImagen");
       const contenido = document.getElementById("contenidoModal");
 
+      const mensaje = `Hola, estoy interesado en este producto: ${p.Imagen} (${p.Color}) por $${Number(p.Precio).toLocaleString()}`;
+      const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
+
       contenido.innerHTML = `
-        <img src="imagenes/${p.Name}" alt="${p.Categoría}" />
+        <img src="imagenes/${p.Name}" alt="${p.Categoría}" loading="lazy" />
         <h2>${p.Imagen}</h2>
         <p><strong>Color:</strong> ${p.Color}</p>
         <p class="precio"><strong>Precio:</strong> $${Number(p.Precio).toLocaleString()}</p>
         <a href="${p.Enlace}" target="_blank" class="btn-wsp">Comprar</a>
+        <br><br>
+        <a href="${linkWhatsapp}" target="_blank" style="display:inline-block; background-color:#25d366; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">Escribir por WhatsApp</a>
       `;
 
       modal.style.display = "block";
