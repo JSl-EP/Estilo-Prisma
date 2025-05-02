@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -61,7 +60,6 @@
     let productos = [];
     let categorias = [];
 
-    // Mapeo de categorías a iconos
     const iconosCategorias = {
       "Ropa": "fas fa-tshirt",
       "Chaquetas": "fas fa-jacket",
@@ -78,38 +76,29 @@
       "Tecnología": "fas fa-laptop",
     };
 
-    // Función para limpiar texto (quitar comillas)
     function limpiarTexto(texto) {
       return texto ? texto.replace(/"/g, '') : '';
     }
 
-    // Función para formatear precio
     function formatearPrecio(precio) {
       const numero = precio ? Number(precio.replace(/[^0-9.]/g, '')) : 0;
       return `$${numero.toLocaleString()}`;
     }
 
-    // Función para obtener el icono correspondiente a una categoría
     function obtenerIconoCategoria(categoria) {
       const catLimpia = limpiarTexto(categoria);
-      // Buscar coincidencia exacta
       if (iconosCategorias[catLimpia]) {
         return iconosCategorias[catLimpia];
       }
-      
-      // Buscar coincidencia parcial
       const categoriaLower = catLimpia.toLowerCase();
       for (const key in iconosCategorias) {
         if (categoriaLower.includes(key.toLowerCase())) {
           return iconosCategorias[key];
         }
       }
-      
-      // Icono por defecto
       return "fas fa-tag";
     }
 
-    // Función para cargar los datos del archivo CSV
     function cargarDatos() {
       fetch('chips.csv')
         .then(res => res.text()) 
@@ -119,16 +108,11 @@
           
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
-            return Object.fromEntries(headers.map((h, i) => [h, limpiarTexto(valores[i]?.trim())));
+            return Object.fromEntries(headers.map((h, i) => [h, limpiarTexto(valores[i]?.trim())]));
           });
 
-          // Obtener categorías únicas desde el CSV
           categorias = [...new Set(productos.map(p => p.Categoría))].filter(Boolean);
-          
-          // Generar el menú de categorías
           generarMenuCategorias();
-          
-          // Mostrar todos los productos inicialmente
           mostrarProductos(productos);
         })
         .catch(error => {
@@ -137,16 +121,12 @@
         });
     }
 
-    // Función para generar el menú de categorías
     function generarMenuCategorias() {
       const categoriasList = document.getElementById('categoriasList');
-      
-      // Limpiar solo los ítems de categoría (mantener "Todos los productos")
       const todosItem = document.getElementById('todos-productos');
       categoriasList.innerHTML = '';
       categoriasList.appendChild(todosItem);
       
-      // Añadir cada categoría encontrada en el CSV
       categorias.forEach(cat => {
         const icono = obtenerIconoCategoria(cat);
         
@@ -165,7 +145,6 @@
         categoriasList.appendChild(item);
       });
       
-      // Configurar evento para "Todos los productos"
       todosItem.onclick = () => {
         document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
         todosItem.classList.add('active');
@@ -186,7 +165,7 @@
         const tarjeta = document.createElement('div');
         tarjeta.className = 'producto';
         tarjeta.innerHTML = 
-          `<img src="imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
+          `<img src="./imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
            <h3>${limpiarTexto(p.Imagen)}</h3>
            <p>${limpiarTexto(p.Color)}</p>
            <p class="precio">${formatearPrecio(p.Precio)}</p>`;
@@ -219,7 +198,7 @@
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
       contenido.innerHTML = 
-        `<img src="imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
+        `<img src="./imagenes/${p.Name}" alt="${limpiarTexto(p.Categoría)}" loading="lazy" />
          <h2>${limpiarTexto(p.Imagen)}</h2>
          <p><strong>Categoría:</strong> ${limpiarTexto(p.Categoría)}</p>
          <p><strong>Color:</strong> ${limpiarTexto(p.Color)}</p>
@@ -238,7 +217,6 @@
       document.getElementById("menu").classList.toggle("menu-visible");
     }
 
-    // Permitir búsqueda al presionar Enter
     document.getElementById('busqueda').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         buscarProductos();
