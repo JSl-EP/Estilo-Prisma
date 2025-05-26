@@ -2,12 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Viewport optimizado para móviles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Estilo Prisma | Catálogo</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Iconos de Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+
+  <!-- Overlay para cerrar el menú al hacer clic fuera (solo visible en móviles) -->
+  <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
 
   <!-- Menú lateral con categorías -->
   <nav id="menu" class="menu">
@@ -16,22 +21,25 @@
         <i class="fas fa-gem"></i>
         <h2>Estilo Prisma</h2>
       </div>
+      <!-- Botón para alternar menú (visible solo en móviles) -->
       <span class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></span>
     </div>
     
+    <!-- Lista de categorías generada dinámicamente -->
     <div class="menu-items" id="categoriasList">
-      <!-- Las categorías se generarán dinámicamente con JavaScript -->
+      <!-- Categoría "Todos" por defecto -->
       <div class="menu-item active" id="todos-productos">
         <i class="fas fa-th-large"></i>
         <span>Todos los productos</span>
       </div>
     </div>
     
+    <!-- Búsqueda de productos -->
     <div class="menu-search">
       <h3>Buscar productos</h3>
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar...">
-        <button onclick="buscarProductos()"><i class="fas fa-search"></i></button>
+        <input type="text" id="busqueda" placeholder="Buscar..." aria-label="Buscar productos">
+        <button onclick="buscarProductos()" aria-label="Buscar"><i class="fas fa-search"></i></button>
       </div>
     </div>
   </nav>
@@ -40,26 +48,29 @@
   <div id="contenidoPrincipal" class="contenido-principal">
     <h1 class="titulo">Catálogo Estilo Prisma</h1>
 
-    <!-- Contenedor donde se mostrarán las tarjetas de productos -->
+    <!-- Contenedor de productos -->
     <div class="contenedor" id="catalogo"></div>
   </div>
 
-  <!-- Modal para ampliar la vista del producto cuando se hace clic -->
-  <div id="modalImagen">
-    <span onclick="cerrarModal()">&times;</span>
+  <!-- Modal para vista ampliada de productos -->
+  <div id="modalImagen" class="modal">
+    <!-- Botón de cerrar con estilo mejorado para móviles -->
+    <span class="modal-close" onclick="cerrarModal()" aria-label="Cerrar modal">&times;</span>
     <div class="modal-contenido" id="contenidoModal"></div>
   </div>
 
-  <!-- WhatsApp flotante -->
-  <a href="https://wa.me/573227490934" target="_blank" class="whatsapp-btn">
+  <!-- Botón flotante de WhatsApp -->
+  <a href="https://wa.me/573227490934" target="_blank" class="whatsapp-btn" aria-label="Contactar por WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
 
-  <!-- Lógica JavaScript -->
+  <!-- JavaScript -->
   <script>
-    let productos = [];
-    let categorias = [];
+    // Variables globales
+    let productos = []; // Almacena todos los productos
+    let categorias = []; // Almacena las categorías únicas
 
+    // Mapeo de iconos para categorías
     const iconosCategorias = {
       "Ropa": "fas fa-tshirt",
       "Chaquetas": "fas fa-jacket",
@@ -76,15 +87,30 @@
       "Tecnología": "fas fa-laptop",
     };
 
+    /**
+     * Limpia texto removiendo comillas y espacios innecesarios
+     * @param {string} texto - Texto a limpiar
+     * @return {string} Texto limpio
+     */
     function limpiarTexto(texto) {
-      return texto ? texto.replace(/"/g, '') : '';
+      return texto ? texto.replace(/"/g, '').trim() : '';
     }
 
+    /**
+     * Formatea el precio para mostrarlo correctamente
+     * @param {string} precio - Precio a formatear
+     * @return {string} Precio formateado con símbolo de pesos
+     */
     function formatearPrecio(precio) {
       const numero = precio ? Number(precio.replace(/[^0-9.]/g, '')) : 0;
       return `$${numero.toLocaleString()}`;
     }
 
+    /**
+     * Obtiene el icono correspondiente a una categoría
+     * @param {string} categoria - Categoría del producto
+     * @return {string} Clase del icono de Font Awesome
+     */
     function obtenerIconoCategoria(categoria) {
       const catLimpia = limpiarTexto(categoria);
       if (iconosCategorias[catLimpia]) {
@@ -96,9 +122,12 @@
           return iconosCategorias[key];
         }
       }
-      return "fas fa-tag";
+      return "fas fa-tag"; // Icono por defecto
     }
 
+    /**
+     * Carga los datos del archivo CSV y procesa la información
+     */
     function cargarDatos() {
       fetch('chips.csv')
         .then(res => res.text()) 
@@ -106,11 +135,13 @@
           const lineas = data.trim().split('\n');
           const headers = lineas[0].split(',').map(h => limpiarTexto(h.trim()));
           
+          // Procesa cada línea del CSV
           productos = lineas.slice(1).map(linea => {
             const valores = linea.split(',');
             return Object.fromEntries(headers.map((h, i) => [h, limpiarTexto(valores[i]?.trim())]));
           });
 
+          // Obtiene categorías únicas
           categorias = [...new Set(productos.map(p => p.Categoría))].filter(Boolean);
           generarMenuCategorias();
           mostrarProductos(productos);
@@ -121,12 +152,16 @@
         });
     }
 
+    /**
+     * Genera el menú de categorías dinámicamente
+     */
     function generarMenuCategorias() {
       const categoriasList = document.getElementById('categoriasList');
       const todosItem = document.getElementById('todos-productos');
       categoriasList.innerHTML = '';
       categoriasList.appendChild(todosItem);
       
+      // Crea un elemento para cada categoría
       categorias.forEach(cat => {
         const icono = obtenerIconoCategoria(cat);
         
@@ -137,21 +172,35 @@
           <span>${limpiarTexto(cat)}</span>
         `;
         item.onclick = () => {
+          // Marca la categoría activa y filtra productos
           document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
           item.classList.add('active');
           const productosFiltrados = productos.filter(p => p.Categoría === cat);
           mostrarProductos(productosFiltrados);
+          // Cierra el menú en móviles después de seleccionar
+          if (window.innerWidth <= 768) {
+            toggleMenu();
+          }
         };
         categoriasList.appendChild(item);
       });
       
+      // Maneja el click en "Todos los productos"
       todosItem.onclick = () => {
         document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
         todosItem.classList.add('active');
         mostrarProductos(productos);
+        // Cierra el menú en móviles después de seleccionar
+        if (window.innerWidth <= 768) {
+          toggleMenu();
+        }
       };
     }
 
+    /**
+     * Muestra los productos en el contenedor
+     * @param {Array} lista - Lista de productos a mostrar
+     */
     function mostrarProductos(lista) {
       const contenedor = document.getElementById('catalogo');
       contenedor.innerHTML = '';
@@ -161,6 +210,7 @@
         return;
       }
 
+      // Crea una tarjeta para cada producto
       lista.forEach(p => {
         const tarjeta = document.createElement('div');
         tarjeta.className = 'producto';
@@ -174,6 +224,9 @@
       });
     }
 
+    /**
+     * Busca productos según el término ingresado
+     */
     function buscarProductos() {
       const termino = limpiarTexto(document.getElementById('busqueda').value.toLowerCase());
       if (!termino) {
@@ -181,6 +234,7 @@
         return;
       }
       
+      // Filtra productos que coincidan con el término de búsqueda
       const resultados = productos.filter(p => 
         limpiarTexto(p.Imagen).toLowerCase().includes(termino) || 
         limpiarTexto(p.Categoría).toLowerCase().includes(termino) ||
@@ -191,9 +245,14 @@
       mostrarProductos(resultados);
     }
 
+    /**
+     * Muestra el producto en un modal ampliado
+     * @param {Object} p - Producto a mostrar
+     */
     function ampliarProducto(p) {
       const modal = document.getElementById("modalImagen");
       const contenido = document.getElementById("contenidoModal");
+      // Prepara mensaje para WhatsApp
       const mensaje = `Hola, estoy interesado en este producto: ${limpiarTexto(p.Imagen)} (${limpiarTexto(p.Color)}) por ${formatearPrecio(p.Precio)}`;
       const linkWhatsapp = `https://wa.me/573227490934?text=${encodeURIComponent(mensaje)}`;
 
@@ -207,23 +266,43 @@
          <a href="${linkWhatsapp}" target="_blank" class="btn-wsp">Escribir por WhatsApp</a>`;
 
       modal.style.display = "block";
+      document.body.style.overflow = "hidden"; // Evita scroll cuando el modal está abierto
     }
 
+    /**
+     * Cierra el modal de producto ampliado
+     */
     function cerrarModal() {
       document.getElementById("modalImagen").style.display = "none";
+      document.body.style.overflow = "auto"; // Restaura el scroll
     }
 
+    /**
+     * Alterna la visibilidad del menú (para móviles)
+     */
     function toggleMenu() {
-      document.getElementById("menu").classList.toggle("menu-visible");
+      const menu = document.getElementById("menu");
+      const overlay = document.getElementById("menuOverlay");
+      menu.classList.toggle("menu-visible");
+      overlay.style.display = menu.classList.contains("menu-visible") ? "block" : "none";
     }
 
+    // Evento para buscar al presionar Enter
     document.getElementById('busqueda').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         buscarProductos();
       }
     });
 
-    cargarDatos();
+    // Cierra el modal al hacer clic fuera del contenido
+    document.getElementById('modalImagen').addEventListener('click', function(e) {
+      if (e.target === this) {
+        cerrarModal();
+      }
+    });
+
+    // Carga los datos al iniciar
+    document.addEventListener('DOMContentLoaded', cargarDatos);
   </script>
 
 </body>
